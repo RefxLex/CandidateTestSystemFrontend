@@ -1,25 +1,20 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const ASSET_PATH = process.env.ASSET_PATH || '/';
+
 
 module.exports = {
-  mode: 'development',
-  entry: {
-    bundle: path.resolve(__dirname, 'src/index.js'),
-  },
+
+  entry:"./src/index.js",
   output: {
-    path: path.resolve(__dirname, 'dist/'),
-    publicPath: "/dist/",
-    filename: '[name][contenthash].js',
+    path: path.join(__dirname, '/dist'),
+    filename: 'bundle.js',
     clean: true,
     assetModuleFilename: '[name][ext]',
+    publicPath: ASSET_PATH,
   },
-  devtool: 'source-map',
   devServer: {
-    static: {
-      directory: path.resolve(__dirname, 'dist'),
-    },
     port: 3000,
     open: true,
     hot: true,
@@ -33,7 +28,7 @@ module.exports = {
         use: [MiniCssExtractPlugin.loader, 'css-loader'],
       },
       {
-        test: /\.js$/,
+        test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
@@ -43,18 +38,15 @@ module.exports = {
         },
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        test: /\.(png|svg|jpg|jpeg|gif)$/,
         type: 'asset/resource',
       },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'Candidate testing system',
-      filename: 'index.html',
-      template: 'src/template.html'
+      template: "./src/index.html"
     }),
     new MiniCssExtractPlugin(),
-    new BundleAnalyzerPlugin(),
   ],
 }
