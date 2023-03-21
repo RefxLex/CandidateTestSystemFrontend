@@ -15,17 +15,9 @@ li, a {
     text-decoration: none;
 }
 
-.header__admin, .header__candidate{
+header{
     display: flex;
-    justify-content:start;
-    align-items:center;
-    padding: 30px 30px;
-    border-bottom: 1px solid #abb0b5;
-}
-
-.header__home{
-    display: flex;
-    justify-content:space-between;
+    justify-content: space-between;
     align-items:center;
     padding: 30px 30px;
     border-bottom: 1px solid #abb0b5;
@@ -67,15 +59,32 @@ nav{
     color: #1976D3;
 }
 
-.header__login__button{
+.header__logout__button{
+    padding: 9px 25px;
+    background-color:white;
+    border: 2px solid #333333;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease 0s;
+    text-align: center;
+    margin: 0px 10px;
+}
+
+.header__logout__button:hover{
+    background-color: #e9f4fb;
+}
+
+.header__main__button{
     padding: 9px 25px;
     background-color: rgba(0, 136, 169, 1);
     border: none;
     border-radius: 50px;
     cursor: pointer;
     transition: all 0.3s ease 0s;
+    text-align: center;
+    margin: 0px 10px;
 }
-.header__login__button:hover{
+.header__main__button:hover{
     background-color: rgba(0, 136, 169, 0.8);
 }
 
@@ -191,5 +200,18 @@ form .txt_field{
   .signup_link a:hover{
     text-decoration: underline;
   }
+
+ .offscreen {
+    position: absolute;
+    left: -9999px;
+}
+
+.errmsg {
+    background-color: lightpink;
+    color: firebrick;
+    font-weight: bold;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+}
 
 
