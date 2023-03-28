@@ -40,14 +40,14 @@ function Login(){
                     password: pwd
                 }), 
                 {
-                    headers:{'Content-Type':'application/json'}
+                    headers:{'Content-Type':'application/json'},
+                    withCredentials: true
                 }
             );
-            //const accessToken = response?.data?.accessToken;
             const roles = response?.data?.roles;
             const id = response?.data?.id;
-            sessionStorage.setItem("id", id);
-            sessionStorage.setItem("role", roles.at(0));
+            localStorage.setItem("id", id);
+            localStorage.setItem("role", roles.at(0));
             setAuth({
                 id: id,
                 roles: [roles.at(0)]

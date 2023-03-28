@@ -15,8 +15,8 @@ export default function Header(){
     }
 
     const logout = async () => {
-        sessionStorage.removeItem("id");
-        sessionStorage.removeItem("role");
+        localStorage.removeItem("id");
+        localStorage.removeItem("role");
         setAuth({});
         navigate('/');
     }

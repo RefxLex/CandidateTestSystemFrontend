@@ -6,11 +6,10 @@ const AuthContext = createContext({});
 export const AuthProvider = ({ children }) => {
     const[auth, setAuth] = useState({});
     
-    const id = sessionStorage.getItem("id");
-    const role = sessionStorage.getItem("role");
+    const id = localStorage.getItem("id");
+    const role = localStorage.getItem("role");
 
     useEffect( () => {
-        console.log("auth rendered");
         setAuth({
             id: id,
             roles: [role]
