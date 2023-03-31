@@ -2,9 +2,18 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 }
 
-/* header */
+
+
+
+/***********************/
+/******* header ********/
+/**********************/
+
+
+
 
 header{
     display: flex;
@@ -100,9 +109,17 @@ nav{
     cursor: pointer;
 }
 
-/* login */
 
-.login h1,
+
+
+
+/***********************/
+/******* login ********/
+/***********************/
+
+
+
+
 
 .center{
     position: absolute;
@@ -237,12 +254,20 @@ form .txt_field{
     margin-bottom: 0.5rem;
 }
 
-/* admin page */
+
+
+
+
+/***************************/
+/******* admin page ********/
+/***************************/
+
+
+
 
 .content-table {
     border-collapse: collapse;
     margin: 25px 0;
-    font-size: 0.9em;
     min-width: 400px;
 }
 
@@ -262,12 +287,6 @@ form .txt_field{
     color: #333333;
 }
 
-.content-table tbody span {
-    font-weight:500;
-    font-size: 14px;
-    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
-    color: #8e8e8e;
-}
 
 .content-table-first-column {
     padding-left: 40px;
@@ -281,6 +300,7 @@ form .txt_field{
     padding-right: 30px;
     padding-top: 20px;
     padding-bottom: 20px;
+    cursor: pointer;
 }
 
 .content-table-column {
@@ -397,6 +417,184 @@ form .txt_field{
     font-size: 16px;
 }
 
+
+
+
+
+
+/*****************************/
+/******* User details ********/
+/*****************************/
+
+
+
+
+
+
+.user-details-container {
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.user-details-container > p {
+    font-size: 18px;
+    padding-top: 50px;
+    padding-left: 20px;
+    padding-bottom: 10px;
+}
+
+.user-details-progress {
+    display: flex;
+    align-items: center;
+}
+
+.user-details-progress > span{
+    padding: 20px 20px;
+}
+
+.user-details-assign-button {
+    margin-left: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 10px 10px;
+    background-color: #f7f7f7;
+    border: 2px solid #d8d8d866;
+    border-radius: 4px;
+}
+
+.user-details-accept-button {
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-right: 30px;
+    margin-bottom: 20px;
+    padding: 10px 10px;
+    color: white;
+    background-color: #3F55c8;
+    border: 2px solid #3F55c8;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.user-details-accept-button > img {
+    padding-right: 10px;
+}
+
+.user-details-cancel-button {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-right: 30px;
+    padding: 10px 10px;
+    background-color: #f7f7f7;
+    border: 2px solid #d8d8d866;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.user-details-cancel-button > img {
+    padding-right: 10px;
+}
+
+.user-details-contacts > li{
+    padding: 10px 20px;
+    color: #1976D3;
+}
+
+.user-details-info {
+    padding: 20px 20px;
+}
+
+.user-details-table {
+    border-collapse: collapse;
+    margin: 25px 25px;
+    min-width: 400px;
+}
+
+.user-details-table > thead > tr > th {
+    text-align:center;
+    font-weight:700;
+    font-size: 16px;
+    color: #333333;
+    border-bottom: 2px solid #dddddd;
+    padding-top: 30px;
+    padding-left: 15px;
+    padding-bottom: 10px;
+    padding-right: 15px;
+}
+
+.user-details-table > tbody > tr > td {
+    font-weight:500;
+    font-size: 16px;
+    color: #333333;
+    padding: 30px 15px;
+    text-align: center;
+}
+
+.user-details-table-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.user-details-code-more-button {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 10px 10px;
+    background-color: #3F55c8;
+    border: 2px solid #3F55c8;
+    border-radius: 4px;
+    color: white;
+}
+
+.user-details-label-task-list {
+    padding: 20px 20px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.user-details-task-container{
+    display: flex;
+    align-items: start;
+}
+
+.user-details-code-label {
+    display:grid;
+    padding: 20px 20px;
+    text-align: right;
+}
+
+.user-details-code-label > span {
+    padding: 10px 0px;
+}
+
+.user-details-code-view {
+    padding: 20px 20px 20px 40px;
+}
+
+.user-details-remind-code-info-list{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0px 10px 0px ;
+    list-style: none;
+    font-size: 14px;
+}
+
+.user-details-code-container {
+    display: flex;
+    align-items: start;
+    border: 1px solid #d8d8d866;
+    padding: 10px 15px 10px 20px;
+}
+
+.user-details-code-numbers {
+    display: grid;
+    background-color: #f7f7f7;
+    border-right: 1px solid #d8d8d866;
+    /*margin: 10px 10px; */
+}
 
 
 

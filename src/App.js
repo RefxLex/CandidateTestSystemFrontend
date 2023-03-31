@@ -1,4 +1,5 @@
 import Login from './components/Login';
+import UserDetails from './components/UserDetails';
 import UserPage from './components/UserPage';
 import AdminPage from './components/AdminPage';
 import ModeratorPage from './components/ModeratorPage';
@@ -26,11 +27,12 @@ function App(){
             <Route element={<RequireAuth allowedRoles={["ROLE_USER"]} />}>
                 <Route path="user" element={<UserPage />}/>
             </Route>
-            <Route element={<RequireAuth allowedRoles={["ROLE_MODERATOR"]}/>}>
+            {/*<Route element={<RequireAuth allowedRoles={["ROLE_MODERATOR"]}/>}>
                 <Route path="moderator" element={<ModeratorPage/>}/>
-            </Route>
-            <Route element={<RequireAuth allowedRoles={["ROLE_ADMIN"]}/>}>
+            </Route> */}
+            <Route element={<RequireAuth allowedRoles={["ROLE_ADMIN", "ROLE_MODERATOR"]}/>}>
                 <Route path="admin" element={<AdminPage />}/>
+                <Route path="details" element={<UserDetails />}/>
             </Route>
 
             {/* catch all */}

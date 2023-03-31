@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState} from 'react';
+import { useNavigate } from 'react-router-dom';
 import HeaderWork from './HeaderWork';
 import Pagination from './Pagination';
 import status_small_1 from '../images/status_small1.png';
@@ -12,8 +13,6 @@ import status_large_3 from '../images/status_large_3.png';
 import status_large_4 from '../images/status_large_4.png';
 import mail_icon from '../images/mail-143.png';
 import baseURL from '../api/util';
-import Posts from './Posts';
-
 
 function AdminPage(){
 
@@ -28,22 +27,116 @@ function AdminPage(){
 
     useEffect( () => {
 
-    },[users])
+        let resourceURL="";
+        let currentPage=1;
+        if(sessionStorage.getItem("mainPageAdminCurrent")){
+            currentPage = parseInt(sessionStorage.getItem("mainPageAdminCurrent"));
+            console.log("currentPage" + currentPage);
+        }
+        switch (sessionStorage.getItem("mainPageAdminAction")) {
+            case "filter":
+                console.log(sessionStorage.getItem("mainPageAdminAction"));
+                resourceURL = "/api/user/filter?status=" + sessionStorage.getItem("status");
+
+                const filterPromise = getUsers(resourceURL);
+                filterPromise.then( data => setCurrentPage (currentPage));
+
+                /*
+                fetch(baseURL + resourceURL, {
+                    method:"GET",
+                    credentials: "include"
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error("Network response was not OK");
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        setUsers(result)
+                        setLoading(false)
+                        return result;
+                        //console.log(result);
+                    })
+                    .then( data => setCurrentPage(currentPage))
+                    .catch((error) => {
+                        console.error("There has been a problem with your fetch operation:", error);
+                }); */
+                
+                break;
+            case "search":
+                console.log(sessionStorage.getItem("mainPageAdminAction"));
+                resourceURL = "/api/user/search?name=" + sessionStorage.getItem("search");
+
+                const searchPromise = getUsers(resourceURL);
+                searchPromise.then( data => setCurrentPage (currentPage));
+
+                /*
+                fetch(baseURL + resourceURL, {
+                    method:"GET",
+                    credentials: "include"
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error("Network response was not OK");
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        setUsers(result)
+                        setLoading(false)
+                        return result;
+                        //console.log(result);
+                    })
+                    .then( data => setCurrentPage(currentPage))
+                    .catch((error) => {
+                        console.error("There has been a problem with your fetch operation:", error);
+                }); */
+                break;
+            default:
+                break;
+            }
+        console.log("page rendered");
+    },[])
 
     function handleChangeStatus(event){
+        sessionStorage.setItem("status", event.target.value);
+        sessionStorage.setItem("mainPageAdminAction", "filter");
         setStatus(event.target.value);
         getUsers("/api/user/filter?status=" + event.target.value);
     }
 
     function handleSubmit(event){
         event.preventDefault();
+        sessionStorage.setItem("mainPageAdminAction","search");
+        sessionStorage.setItem("search", search);
         getUsers("/api/user/search?name=" + search);
     }
 
     function handleInput(event) {
         setSearch(event.target.value);
     }
-    
+
+    async function getUsers(resourceURL){
+        try{
+            const response = await fetch (baseURL + resourceURL, {
+                method:"GET",
+                credentials: "include"
+            })
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            setUsers(result);
+            return result;
+        }
+        catch(error){
+            console.error("There has been a problem with your fetch operation:", error);
+        }
+    }
+
+    /*
     function getUsers(resourceURL) {
         setLoading(true);
         fetch(baseURL + resourceURL, {
@@ -59,12 +152,13 @@ function AdminPage(){
             .then(result => {
                 setUsers(result)
                 setLoading(false)
-                console.log(result);
+                return result;
+                //console.log(result);
             })
             .catch((error) => {
                 console.error("There has been a problem with your fetch operation:", error);
         });
-    }
+    } */
 
     function defineTableRowIcon(userStatus){
         let icon;
@@ -115,7 +209,17 @@ function AdminPage(){
     const currentPosts = users.slice(indexOfFirstPost, indexOfLastPost);
 
     // Change page
-    const paginate = pageNumber => setCurrentPage(pageNumber);
+    const paginate = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const navigate = useNavigate();
+
+    const toUserDetails=(event)=>{
+        //console.log(event.target.id);
+        sessionStorage.setItem("mainPageAdminCurrent", currentPage);
+        navigate('/details',{state:{id:event.target.id}});
+    }
 
     return(
         <div>
@@ -199,9 +303,14 @@ function AdminPage(){
                         <tbody id='userTable'>
                             {
                                 currentPosts.map((user, rowId) => 
-                                <tr key={user.id}>
+                                <tr key={rowId}>
                                     <td className='content-table-first-column'><img src={defineTableRowIcon(user.userStatus)}/></td>
-                                    <td className='content-table-second-column'>{user.fullName}</td>
+                                    <td className='content-table-second-column' 
+                                        id={user.id} 
+                                        onClick={toUserDetails}
+                                    >
+                                        {user.fullName}
+                                    </td>
                                     <td className='content-table-column'>{user.userStatus}</td>
                                     <td className='content-table-column'>{user.lastScore}</td>
                                     <td className='content-table-column'>{user.lastActivity}</td>
