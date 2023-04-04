@@ -3,6 +3,7 @@ import logos from "../images/mylogo4.png";
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthProvider";
+import "./Header.css";
 
 function HeaderWork(){
 

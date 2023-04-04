@@ -1,5 +1,5 @@
 import React from 'react'
-import HeaderWork from './HeaderWork';
+import HeaderWork from '../HeaderWork';
 
 function UserPage(){
     return(

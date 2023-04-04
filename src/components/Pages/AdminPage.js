@@ -1,18 +1,19 @@
 import React, { useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
-import HeaderWork from './HeaderWork';
-import Pagination from './Pagination';
-import status_small_1 from '../images/status_small1.png';
-import status_small_2 from '../images/status_small_2.png';
-import status_small_3 from '../images/status_small_3.png';
-import status_small_4 from '../images/status_small_4.png';
-import search_icon from '../images/icons8-search-20.png';
-import status_large_1 from '../images/status_large_1.png';
-import status_large_2 from '../images/status_large_2.png';
-import status_large_3 from '../images/status_large_3.png';
-import status_large_4 from '../images/status_large_4.png';
-import mail_icon from '../images/mail-143.png';
-import baseURL from '../api/util';
+import HeaderWork from '../HeaderWork';
+import Pagination from '../Pagination';
+import "./AdminPage.css";
+import status_small_1 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_small1.png';
+import status_small_2 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_small_2.png';
+import status_small_3 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_small_3.png';
+import status_small_4 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_small_4.png';
+import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
+import status_large_1 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_large_1.png';
+import status_large_2 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_large_2.png';
+import status_large_3 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_large_3.png';
+import status_large_4 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_large_4.png';
+import mail_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/mail-143.png';
+import baseURL from '../../api/util';
 
 function AdminPage(){
 
@@ -31,72 +32,22 @@ function AdminPage(){
         let currentPage=1;
         if(sessionStorage.getItem("mainPageAdminCurrent")){
             currentPage = parseInt(sessionStorage.getItem("mainPageAdminCurrent"));
-            console.log("currentPage" + currentPage);
         }
         switch (sessionStorage.getItem("mainPageAdminAction")) {
             case "filter":
-                console.log(sessionStorage.getItem("mainPageAdminAction"));
                 resourceURL = "/api/user/filter?status=" + sessionStorage.getItem("status");
-
                 const filterPromise = getUsers(resourceURL);
                 filterPromise.then( data => setCurrentPage (currentPage));
-
-                /*
-                fetch(baseURL + resourceURL, {
-                    method:"GET",
-                    credentials: "include"
-                })
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error("Network response was not OK");
-                        }
-                        return response.json();
-                    })
-                    .then(result => {
-                        setUsers(result)
-                        setLoading(false)
-                        return result;
-                        //console.log(result);
-                    })
-                    .then( data => setCurrentPage(currentPage))
-                    .catch((error) => {
-                        console.error("There has been a problem with your fetch operation:", error);
-                }); */
-                
                 break;
             case "search":
-                console.log(sessionStorage.getItem("mainPageAdminAction"));
                 resourceURL = "/api/user/search?name=" + sessionStorage.getItem("search");
-
                 const searchPromise = getUsers(resourceURL);
                 searchPromise.then( data => setCurrentPage (currentPage));
-
-                /*
-                fetch(baseURL + resourceURL, {
-                    method:"GET",
-                    credentials: "include"
-                })
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error("Network response was not OK");
-                        }
-                        return response.json();
-                    })
-                    .then(result => {
-                        setUsers(result)
-                        setLoading(false)
-                        return result;
-                        //console.log(result);
-                    })
-                    .then( data => setCurrentPage(currentPage))
-                    .catch((error) => {
-                        console.error("There has been a problem with your fetch operation:", error);
-                }); */
                 break;
             default:
                 break;
             }
-        console.log("page rendered");
+        //console.log("page rendered");
     },[])
 
     function handleChangeStatus(event){
@@ -216,7 +167,6 @@ function AdminPage(){
     const navigate = useNavigate();
 
     const toUserDetails=(event)=>{
-        //console.log(event.target.id);
         sessionStorage.setItem("mainPageAdminCurrent", currentPage);
         navigate('/details',{state:{id:event.target.id}});
     }

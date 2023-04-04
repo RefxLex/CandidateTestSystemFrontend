@@ -1,11 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
-import Header from "./Header";
+import Header from "../Header";
 import { useContext } from "react";
-import AuthContext from "../context/AuthProvider";
+import AuthContext from "../../context/AuthProvider";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-
-import axios from "../api/axios";
-const LOGIN_URL = '/api/auth/signin';
+import baseURL from "../../api/util";
+import "./Login.css";
 
 function Login(){
 
@@ -33,47 +32,40 @@ function Login(){
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        try {
-            const response = await axios.post(LOGIN_URL,
-                JSON.stringify({
+        try{
+            const response = await fetch (baseURL + "/api/auth/signin", {
+                method:"POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
                     email: email,
                     password: pwd
-                }), 
-                {
-                    headers:{'Content-Type':'application/json'},
-                    withCredentials: true
-                }
-            );
-            const roles = response?.data?.roles;
-            const id = response?.data?.id;
+                })
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            const result = await response.json();
+
+            const roles = result.roles;
+            const id = result.id;
             localStorage.setItem("id", id);
             localStorage.setItem("role", roles.at(0));
             setAuth({
                 id: id,
                 roles: [roles.at(0)]
             })
-            //setAuth({id:id, email:email, pwd:pwd, roles:roles});
             setEmail('');
             setPwd('');
             //navigate(from, { replace: true });
             navigate('/');
-            
-        } catch (err) {
-            if(!err?.response){
-                setErrMsg('No Server Response');
-            } else if (err.response?.status === 400) {
-                setErrMsg('Missing Email or Password');
-            } else if (err.response?.status === 401) {
-                setErrMsg('Unautherized');
-            } else {
-                setErrMsg('Login failed');
-            }
-            errRef.current.focus();
         }
-
-
+        catch(error){
+            console.error("There has been a problem with your fetch operation:", error);
+        }
     }
-
 
     return(
 

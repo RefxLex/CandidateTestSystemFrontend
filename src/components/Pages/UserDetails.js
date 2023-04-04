@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
-import {useLocation} from 'react-router-dom';
-import arrow_right from '../images/arrow-right-40_2.png';
-import approve_icon from '../images/approve_icon1.png';
-import reject_icon from '../images/icons8-close-20.png';
-import HeaderWork from "./HeaderWork";
+import { useLocation, useNavigate } from 'react-router-dom';
+import arrow_right from '/work/web_projects/CandidateTestSystemFrontend/src/images/arrow-right-40_2.png';
+import approve_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/approve_icon1.png';
+import reject_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-20.png';
+import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
+import HeaderWork from "../HeaderWork";
+import baseURL from "../../api/util";
+import "./UserDetails.css";
+
 import CodeMirror from '@uiw/react-codemirror';
 //import { javascript } from '@codemirror/lang-javascript';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
@@ -160,59 +164,113 @@ public class zadacha
 }
 `
 
-
 function UserDetails(){
 
     const [user, setUser] = useState({});
-    const [userTask, setUserTask] = useState([]);
+    const [userTasks, setUserTasks] = useState([]);
     const location = useLocation();
-
-    //{location.state.id}
+    const navigate = useNavigate();
 
     useEffect( () => {
 
+        const userPromise = doGet("/api/user/" + location.state.id);
+        userPromise.then( (data) => setUser(data));
+
+        const userTasksPromise = doGet("/api/user-task/" + location.state.id);
+        userTasksPromise.then( (data) => setUserTasks(data));
     },[])
 
-    function getUsers(resourceURL) {
-        fetch(baseURL + resourceURL, {
-            method:"GET",
-            credentials: "include"
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Network response was not OK");
-                }
-                return response.json();
+    function approveUser() {
+        const userPromise = doPut("/api/user/status/" + location.state.id + "?status=approved", {});
+        userPromise.then( () => navigate("/admin"));
+    }
+
+    function rejectUser() {
+        const userPromise = doPut("/api/user/status/" + location.state.id + "?status=rejected", {});
+        userPromise.then( () => navigate("/admin"));
+    }
+
+    async function doGet(resourceURL){
+        try{
+            const response = await fetch (baseURL + resourceURL, {
+                method:"GET",
+                credentials: "include"
             })
-            .then(result => {
-                setUser(result)
-                //console.log(result);
-            })
-            .catch((error) => {
-                console.error("There has been a problem with your fetch operation:", error);
-        });
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            return result;
+        }
+        catch(error){
+            console.error("There has been a problem with your fetch operation:", error);
+        }
+    }
+
+    async function doPut(resourceURL, body){
+        try{
+            const response = await fetch (baseURL + resourceURL, {
+                method:"PUT",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                  },
+                body: JSON.stringify(body),
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            return result;
+        }
+        catch(error){
+            console.error("There has been a problem with your fetch operation:", error);
+        }
     }
 
     return(
         <div>
             <HeaderWork/>
             <div className="user-details-container">
-                <p>Малышев Михаил Антонович</p>
+                <p>{user.fullName}</p>
                 <ul className="user-details-contacts">
-                    <li>maLmixail91@mail.ru</li>
-                    <li>+7993482347</li>
+                    <li>{user.email}</li>
+                    <li>{user.phone}</li>
                 </ul>
-                <div className="user-details-info">Java junior developer. Опыт 1 год.</div>
+                <div className="user-details-info">{user.info}<img src={edit_icon} alt="edit" className="user-details-edit-icon"/></div>
                 <button className="user-details-assign-button">Назначить задание</button>
                 <div className="user-details-progress">
-                    <span>Приглашен</span>
+                    <span className={ (user.userStatus==="invited") ? "user-details-highlight" : "user-details-no-highlight" }>Приглашен</span>
                     <img src={arrow_right}></img>
-                    <span>Выполняет</span>
+                    <span className={ (user.userStatus==="started") ? "user-details-highlight" : "user-details-no-highlight" }>Выполняет</span>
                     <img src={arrow_right}></img>
-                    <span>Отправил</span>
+                    <span className={ (user.userStatus==="submitted") ? "user-details-highlight" : "user-details-no-highlight" }>Отправил</span>
                     <img src={arrow_right}></img>
-                    <button className="user-details-accept-button"><img src={approve_icon}></img><span>Принять</span></button>
-                    <button className="user-details-cancel-button"><img src={reject_icon}></img><span>Отклонить</span></button>
+                    { (user.userStatus==="approved") 
+                        ? <span className="user-details-highlight">Принят</span>
+                        : (user.userStatus==="rejected")
+                            ? <span className="user-details-highlight">Отклонен</span>
+                            :   <>
+                                    <button onClick={approveUser} className="user-details-accept-button">
+                                        <img src={approve_icon}></img>
+                                        <span>Принять</span>
+                                    </button>
+                                    <button onClick={rejectUser} className="user-details-cancel-button">
+                                        <img src={reject_icon}></img>
+                                        <span>Отклонить</span>
+                                    </button>
+                                </> 
+                    }
+                    {/*<button onClick={approveUser} className="user-details-accept-button">
+                        <img src={approve_icon}></img>
+                        <span>Принять</span>
+                    </button>
+                    <button onClick={rejectUser} className="user-details-cancel-button">
+                        <img src={reject_icon}></img>
+                        <span>Отклонить</span>
+                    </button> */}
                 </div>
                 <div className="user-details-table-container">
                     <div className="user-details-label-task-list">Список<br/>заданий:</div>
@@ -230,16 +288,21 @@ function UserDetails(){
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Roman to Integer</td>
-                                <td>Java</td>
-                                <td>2023-03-27T11:45:57</td>
-                                <td>100%</td>
-                                <td>3/3</td>
-                                <td>2дня</td>
-                                <td>0.136</td>
-                                <td>14560.0</td>
-                            </tr>
+                            {
+                                userTasks.map( (userTask, rowId) =>
+                                    <tr key={rowId}>
+                                        <td>{userTask.task.name}</td>
+                                        <td>{userTask.languageName}</td>
+                                        <td>{userTask.assignDate.substring(0,10) + " " +  userTask.assignDate.substring(11,19)}</td>
+                                        <td>{ (Math.round((parseInt(userTask.testsPassed)/parseInt(userTask.overallTestsCount))*100))
+                                        .toString() + "%" }</td>
+                                        <td>{ userTask.testsPassed + "/" + userTask.overallTestsCount }</td>
+                                        <td>{userTask.timeSpent}</td>
+                                        <td>{userTask.userTaskResult.at(0).time}s</td>
+                                        <td>{userTask.userTaskResult.at(0).memory}Kb</td>
+                                    </tr>
+                                )
+                            }
                         </tbody>
                     </table>
                 </div>
