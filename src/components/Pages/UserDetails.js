@@ -168,25 +168,34 @@ function UserDetails(){
 
     const [user, setUser] = useState({});
     const [userTasks, setUserTasks] = useState([]);
-    const location = useLocation();
+    const [modal, setModal] = useState(false);
     const navigate = useNavigate();
+    const viewedId = sessionStorage.getItem("targetUserId");
+
+    const [profile, setProfile]=useState({
+        fullName: "",
+        email: "",
+        phone: "",
+        info: ""
+    })
 
     useEffect( () => {
 
-        const userPromise = doGet("/api/user/" + location.state.id);
+        const userPromise = doGet("/api/user/" + viewedId);
         userPromise.then( (data) => setUser(data));
 
-        const userTasksPromise = doGet("/api/user-task/" + location.state.id);
+        const userTasksPromise = doGet("/api/user-task/" + viewedId);
         userTasksPromise.then( (data) => setUserTasks(data));
+
     },[])
 
     function approveUser() {
-        const userPromise = doPut("/api/user/status/" + location.state.id + "?status=approved", {});
+        const userPromise = doPut("/api/user/status/" + viewedId + "?status=approved", {});
         userPromise.then( () => navigate("/admin"));
     }
 
     function rejectUser() {
-        const userPromise = doPut("/api/user/status/" + location.state.id + "?status=rejected", {});
+        const userPromise = doPut("/api/user/status/" + viewedId + "?status=rejected", {});
         userPromise.then( () => navigate("/admin"));
     }
 
@@ -230,16 +239,109 @@ function UserDetails(){
         }
     }
 
+    const toggleModal = () => {
+        setProfile({
+            fullName: user.fullName,
+            email: user.email,
+            phone: user.phone,
+            info: user.info
+        })
+        setModal(!modal);
+    }
+
+    function onChange(event){
+        const {value, name} = event.target
+        setProfile( (prevObj) => ({
+            ...prevObj,
+            [name]: value
+        }))
+    }
+
+    function handleSave(){
+        const updatePromise =  doPut("/api/user/" + viewedId, {
+            email: profile.email,
+            fullName: profile.fullName,
+            phone: profile.phone,
+            info: profile.info
+        })
+        updatePromise.then( () => location.reload() );
+    }
+
+
+
     return(
         <div>
             <HeaderWork/>
+            {/* Modal edit profile*/}
+            <>
+                {modal &&
+                    <div className="modal">
+                        <div className="overlay"></div>
+                        <div className="modal-content">
+                            <div>
+                                <span>Данные кандидата</span>
+                            </div>
+                            <form onSubmit={ (e) => e.preventDefault()}>
+                                <div className="modal-txt-field">
+                                    <label htmlFor="fullName">ФИО</label>
+                                    <input
+                                        type="text"
+                                        name="fullName"
+                                        id="fullName"
+                                        onChange={onChange}
+                                        value={profile.fullName}
+                                        required
+                                    />
+                                </div>
+                                <div className="modal-txt-field">
+                                    <label htmlFor="email">Эл. почта</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        id="email"
+                                        onChange={onChange}
+                                        value={profile.email}
+                                        required
+                                    />
+                                </div>
+                                <div className="modal-txt-field">
+                                    <label htmlFor="phone">Тел.</label>
+                                    <input 
+                                        type="text"
+                                        name="phone"
+                                        id="phone"
+                                        onChange={onChange}
+                                        value={profile.phone}
+                                    />
+                                </div>
+                                <div className="modal-txt-field">
+                                    <label htmlFor="info">Инфо.</label>
+                                    <textarea
+                                        className="modal-info"
+                                        name="info"
+                                        onChange={onChange}
+                                        value={profile.info}
+                                    />
+                                </div>
+                                <div className="modal-btn-container">
+                                    <button onClick={handleSave} className="user-details-accept-button">Сохранить</button>
+                                    <button onClick={toggleModal} className="user-details-cancel-button">Отмена</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </>
+            {/* Main content */}
             <div className="user-details-container">
                 <p>{user.fullName}</p>
                 <ul className="user-details-contacts">
                     <li>{user.email}</li>
                     <li>{user.phone}</li>
                 </ul>
-                <div className="user-details-info">{user.info}<img src={edit_icon} alt="edit" className="user-details-edit-icon"/></div>
+                <div className="user-details-info">{user.info}
+                    <img src={edit_icon} alt="edit" onClick={toggleModal} className="user-details-edit-icon"/>
+                </div>
                 <button className="user-details-assign-button">Назначить задание</button>
                 <div className="user-details-progress">
                     <span className={ (user.userStatus==="invited") ? "user-details-highlight" : "user-details-no-highlight" }>Приглашен</span>
@@ -263,14 +365,6 @@ function UserDetails(){
                                     </button>
                                 </> 
                     }
-                    {/*<button onClick={approveUser} className="user-details-accept-button">
-                        <img src={approve_icon}></img>
-                        <span>Принять</span>
-                    </button>
-                    <button onClick={rejectUser} className="user-details-cancel-button">
-                        <img src={reject_icon}></img>
-                        <span>Отклонить</span>
-                    </button> */}
                 </div>
                 <div className="user-details-table-container">
                     <div className="user-details-label-task-list">Список<br/>заданий:</div>

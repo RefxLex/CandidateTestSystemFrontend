@@ -47,7 +47,6 @@ function AdminPage(){
             default:
                 break;
             }
-        //console.log("page rendered");
     },[])
 
     function handleChangeStatus(event){
@@ -168,7 +167,9 @@ function AdminPage(){
 
     const toUserDetails=(event)=>{
         sessionStorage.setItem("mainPageAdminCurrent", currentPage);
+        sessionStorage.setItem("targetUserId", event.target.id);
         navigate('/details',{state:{id:event.target.id}});
+        //location.state.id
     }
 
     return(

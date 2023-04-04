@@ -29,7 +29,7 @@ function HeaderWork(){
             <nav>
                 <ul className="nav__links">
                     { ((auth?.roles?.includes("ROLE_MODERATOR")) || (auth?.roles?.includes("ROLE_ADMIN"))) 
-                        ?<li><a href="#">Кандидаты</a></li>
+                        ?<li><a href="/admin">Кандидаты</a></li>
                         : false
                     }
                     {/* ((auth?.roles?.includes("ROLE_MODERATOR")) || (auth?.roles?.includes("ROLE_ADMIN"))) 

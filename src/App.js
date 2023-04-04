@@ -7,7 +7,6 @@ import Layout from './components/Layout';
 import Missing from './components/Pages/Missing';
 import Unauthorized from './components/Pages/Unauthorized';
 import RequireAuth from './components/RequireAuth';
-import Modal from './components/Modals/Modal';
 import React, { useState } from 'react';
 import { Routes, Route} from 'react-router-dom';
 
@@ -22,8 +21,6 @@ function App(){
             <Route path="login" element={<Login />}/>
             <Route path="unauthorized" element={<Unauthorized/>}/>
             <Route path="/" element={<Home/>} />
-
-            <Route path="/modal" element={<Modal/>} />
 
             {/* protected routes*/}
             <Route element={<RequireAuth allowedRoles={["ROLE_USER"]} />}>

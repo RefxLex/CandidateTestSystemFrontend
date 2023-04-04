@@ -59,8 +59,7 @@ function Login(){
             })
             setEmail('');
             setPwd('');
-            //navigate(from, { replace: true });
-            navigate('/');
+            navigate(from, { replace: true });
         }
         catch(error){
             console.error("There has been a problem with your fetch operation:", error);
