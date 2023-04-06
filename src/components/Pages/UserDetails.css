@@ -1,8 +1,21 @@
 
+
+
+
+
+/********************/
+/****User Details****/
+/*******************/
+
+
+
+
+
 .user-details-container {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
     font-weight: 500;
     font-size: 16px;
+    color: #333333;
 }
 
 .user-details-container > p {
@@ -30,6 +43,7 @@
     border: 2px solid #d8d8d866;
     border-radius: 4px;
     cursor: pointer;
+    color: #333333;
 }
 
 .user-details-assign-button:hover {
@@ -84,6 +98,7 @@
     align-items: center;
     cursor: pointer;
     font-weight: 700;
+    color: #333333;
 }
 
 .user-details-cancel-button:hover {
@@ -202,6 +217,21 @@
     border-right: 1px solid #d8d8d866;
 }
 
+
+
+
+
+
+/***************************/
+/**** Edit Profile Modal****/
+/***************************/
+
+
+
+
+
+
+
 .modal, .overlay {
     width: 100vw;
     height: 100vh;
@@ -279,3 +309,6 @@
 .modal-info::-webkit-scrollbar{
     width: 0px;
 }
+
+
+

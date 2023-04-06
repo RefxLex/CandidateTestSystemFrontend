@@ -4,165 +4,12 @@ import arrow_right from '/work/web_projects/CandidateTestSystemFrontend/src/imag
 import approve_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/approve_icon1.png';
 import reject_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-20.png';
 import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
+import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
+import close_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-window-30.png';
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/util";
 import "./UserDetails.css";
 
-import CodeMirror from '@uiw/react-codemirror';
-//import { javascript } from '@codemirror/lang-javascript';
-import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
-import { languages } from '@codemirror/language-data';
-
-
-const codetext = `
-import java.io.*;
-import java.util.*;
-import java.text.*;
-public class zadacha
-{
-    public static void main(String []args) throws IOException {     
-        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");        
-        ArrayList<Person> list = new ArrayList<Person>();
-        FileReader f1 = null;
-    try{
-        f1 = new FileReader("C:\\work\\tehnopolis_java\\java_prj\\zadacha_ivt\\list2.txt");
-        BufferedReader dataInput = new BufferedReader(f1);
-        //System.setOut(new java.io.PrintStream(System.out, true, "UTF-8"));
-        String buff=" ";
-        String dayBuff;
-        String monthBuff;
-        String yearBuff;
-        Date recDate;
-        String nameBuff;
-        String surnameBuff;
-        String cityBuff;
-        String preLastLine=" ";
-        String lastLine=" ";
-        GregorianCalendar recGDate=null;
-        int i=0;
-        int namePos;
-        int surnamePos;
-        int cityPos;
-        int dayPos;
-        int monthPos;
-        int row=1;
-        boolean city=true;
-            while(buff != null){
-                preLastLine=lastLine;
-                lastLine=buff;
-                buff = dataInput.readLine();
-                if(buff != null){
-                    namePos=buff.indexOf(' ');
-                    surnamePos=-1;
-                    cityPos=-1;
-                    dayPos=-1;
-                    monthPos= -1;
-                    if (namePos!=-1 ){     // person  
-                    nameBuff = buff.substring(0,namePos);
-                    surnamePos=buff.indexOf(' ',namePos+1);
-                        if(surnamePos!=-1){
-                            surnameBuff = buff.substring(namePos+1,surnamePos);
-                            cityPos=buff.indexOf(' ',surnamePos+1);
-                            if(cityPos!= -1){
-                                cityBuff = buff.substring(surnamePos+1, cityPos);
-                                dayPos = buff.indexOf('.',cityPos+1);
-                                if(dayPos!= -1){
-                                    dayBuff = buff.substring(dayPos-2,dayPos);
-                                    monthPos = buff.indexOf('.',dayPos+1);
-                                    if(monthPos!= -1){
-                                        monthBuff = buff.substring(monthPos-2, monthPos);
-                                        yearBuff = buff.substring(monthPos+1, buff.length());
-                                        GregorianCalendar vDate = new GregorianCalendar(Integer.parseInt(yearBuff),Integer.parseInt(monthBuff),Integer.parseInt(dayBuff));
-                                        list.add(new Person(nameBuff,surnameBuff,cityBuff,vDate));
-                                    }
-                                    else{
-                                        throw new InputParamException(row);
-                                    }
-                                }
-                                else{
-                                    throw new InputParamException(row);
-                                }
-
-                            }
-                            else{
-                                throw new InputParamException(row);
-                            }
-                        }
-                        else{
-                            throw new InputParamException(row);
-                        }
-                    }
-                    else{ 
-                        if(buff.length()>20){  
-                            throw new InputParamException(row);
-                        }
-                        if(city==false){
-                                dayPos = buff.indexOf('.');
-                                if(dayPos!= -1){
-                                    dayBuff = buff.substring(dayPos-2,dayPos);
-                                    monthPos = buff.indexOf('.',dayPos+1);
-                                    if(monthPos!= -1){
-                                                monthBuff = buff.substring(monthPos-2, monthPos);
-                                                yearBuff = buff.substring(monthPos+1, buff.length());
-                                                recGDate = new GregorianCalendar(Integer.parseInt(yearBuff),Integer.parseInt(monthBuff),Integer.parseInt(dayBuff));
-                                            }
-                                            else{
-                                                throw new InputParamException(row);
-                                            }
-                                }
-                                else{
-                                    throw new InputParamException(row);
-                                }
-                        }
-                        else{
-                            city=false;
-                        }
-  
-                    }
-                }
-                i=i+1;
-                row=row+1;
-            }
-        String cityS = preLastLine;
-        //System.out.println(recGDate.get(Calendar.DAY_OF_MONTH)+"."+recGDate.get(Calendar.MONTH)+"."+recGDate.get(Calendar.YEAR));
-            Integer cityzens=0;
-            Integer vCityzens=0;
-            double pCount=0;
-            double result=0;
-           
-            for(Person str: list){
-            
-                if(cityS.equals(str.m_city)==true){
-                    
-                    if(str.vCalc(recGDate)==true){
-                        vCityzens=vCityzens+1;
-                    }
-                        cityzens=cityzens+1;              
-                }
-            }
-        pCount = (double)vCityzens/cityzens*100;
-        result = Math.floor(pCount);
-        //System.out.println("cityzens=" + cityzens);
-        //System.out.println("VCityzens=" + vCityzens);
-        System.out.println("Р§РёСЃР»Рѕ РІР°РєС†РёРЅРёСЂРѕРІР°РЅРЅС‹С… Р¶РёС‚РµР»РµР№ РЅР° СѓРєР°Р·Р°РЅРЅСѓСЋ РґР°С‚Сѓ = " + (int) result +"%"); 
-    }
-    catch(InputParamException e){
-        e.printEx();
-    }
-    catch(IOException e){
-        System.out.println("Error.Couldn't open file");
-    }
-        finally{
-                try{
-                    f1.close();
-                }
-                catch(IOException e){
-                    System.out.println("Error.Couldn't close file");
-                }
-             }
-    }
-}
-`
 
 function UserDetails(){
 
@@ -184,7 +31,7 @@ function UserDetails(){
         const userPromise = doGet("/api/user/" + viewedId);
         userPromise.then( (data) => setUser(data));
 
-        const userTasksPromise = doGet("/api/user-task/" + viewedId);
+        const userTasksPromise = doGet("/api/user-task/all/" + viewedId);
         userTasksPromise.then( (data) => setUserTasks(data));
 
     },[])
@@ -249,6 +96,11 @@ function UserDetails(){
         setModal(!modal);
     }
 
+    function viewUserTask(event){
+        sessionStorage.setItem("targetTaskId", event.target.id);
+        navigate("/user-task")
+    }
+
     function onChange(event){
         const {value, name} = event.target
         setProfile( (prevObj) => ({
@@ -266,8 +118,6 @@ function UserDetails(){
         })
         updatePromise.then( () => location.reload() );
     }
-
-
 
     return(
         <div>
@@ -371,6 +221,7 @@ function UserDetails(){
                     <table className="user-details-table">
                         <thead>
                             <tr>
+                                <th> </th>
                                 <th>Задание</th>
                                 <th>Язык</th>
                                 <th>Назначено</th>
@@ -385,6 +236,9 @@ function UserDetails(){
                             {
                                 userTasks.map( (userTask, rowId) =>
                                     <tr key={rowId}>
+                                        <td>
+                                            <img id={userTask.id} src={search_icon} onClick={viewUserTask}  alt="edit" className="user-details-edit-icon"/>
+                                        </td>
                                         <td>{userTask.task.name}</td>
                                         <td>{userTask.languageName}</td>
                                         <td>{userTask.assignDate.substring(0,10) + " " +  userTask.assignDate.substring(11,19)}</td>
@@ -400,33 +254,6 @@ function UserDetails(){
                         </tbody>
                     </table>
                 </div>
-                {/*<div className="user-details-task-container">
-                    <div className="user-details-code-label">
-                        <span>Roman to Integer</span>
-                        <span>Java</span>
-                        <button className="user-details-code-more-button">Подробнее</button>
-                    </div>
-                    <div className="user-details-code-view">
-                        <div>
-                            <ul className="user-details-remind-code-info-list">
-                                <li>Код решения</li>
-                                <li>3/3 Тестов пройдено, 2 дня времени затрачено, 14560.0 время исполнения</li>
-                            </ul>
-                        </div>
-                        <div className="user-details-code-container">
-                            <CodeMirror
-                                //value="console.log('hello world!');"
-                                value={codetext}
-                                //height="200px"
-                                //extensions={[javascript({ jsx: true })]}
-                                extensions={[markdown({ base: markdownLanguage, codeLanguages: languages })]}
-                                //theme={okaidia}
-                                //onChange={onChange}
-                                readOnly={true}
-                            />
-                        </div>
-                    </div>
-                </div> */}
             </div>
         </div>
     )

@@ -86,30 +86,6 @@ function AdminPage(){
         }
     }
 
-    /*
-    function getUsers(resourceURL) {
-        setLoading(true);
-        fetch(baseURL + resourceURL, {
-            method:"GET",
-            credentials: "include"
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Network response was not OK");
-                }
-                return response.json();
-            })
-            .then(result => {
-                setUsers(result)
-                setLoading(false)
-                return result;
-                //console.log(result);
-            })
-            .catch((error) => {
-                console.error("There has been a problem with your fetch operation:", error);
-        });
-    } */
-
     function defineTableRowIcon(userStatus){
         let icon;
         switch (userStatus) {
@@ -168,8 +144,7 @@ function AdminPage(){
     const toUserDetails=(event)=>{
         sessionStorage.setItem("mainPageAdminCurrent", currentPage);
         sessionStorage.setItem("targetUserId", event.target.id);
-        navigate('/details',{state:{id:event.target.id}});
-        //location.state.id
+        navigate('/details');
     }
 
     return(
