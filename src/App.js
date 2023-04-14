@@ -10,6 +10,7 @@ import Layout from './components/Layout';
 import Missing from './components/Pages/Missing';
 import Unauthorized from './components/Pages/Unauthorized';
 import UserTask from './components/Pages/UserTask';
+import AssignTask from './components/Pages/AssignTask';
 
 
 function App(){
@@ -29,8 +30,9 @@ function App(){
             </Route>
             <Route element={<RequireAuth allowedRoles={["ROLE_ADMIN", "ROLE_MODERATOR"]}/>}>
                 <Route path="admin" element={<AdminPage />}/>
-                <Route path="details" element={<UserDetails />}/>
-                <Route path="user-task" element={<UserTask />}/>
+                <Route path="user-details/:userId" element={<UserDetails />}/>
+                <Route path="user-task/:userTaskId" element={<UserTask />}/>
+                <Route path="assign-task/:userId" element={<AssignTask/>}/>
             </Route>
 
             {/* catch all */}

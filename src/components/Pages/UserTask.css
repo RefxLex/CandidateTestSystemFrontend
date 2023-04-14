@@ -15,7 +15,16 @@
     padding-right: 30%;
 }
 
-.solution-header > a > img {
+.solution-back-btn {
+    border: none;
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    font-size: 16px;
+    color: #333333;
+}
+
+.solution-back-btn > img {
     cursor: pointer;
     padding-left: 6px;
 }
@@ -192,17 +201,17 @@
     left: 49.5%;
     transform: translate(-50%, -50%);
     line-height: 1.4;
-    background: #f1f1f1;
+    background: white;
     padding: 15px 15px;
     min-height: 95%;
     min-width: 97%;
 }
 
-.solution-modal > div {
+.solution-modal-close-icon-container {
     display: flex;
     justify-content: end;
 }
 
-.solution-modal > div > img {
+.solution-modal-close-icon {
     cursor: pointer;
 }

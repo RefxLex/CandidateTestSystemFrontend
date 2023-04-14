@@ -1,5 +1,5 @@
 import React, { useEffect, useState} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import HeaderWork from '../HeaderWork';
 import Pagination from '../Pagination';
 import "./AdminPage.css";
@@ -12,59 +12,69 @@ import status_large_1 from '/work/web_projects/CandidateTestSystemFrontend/src/i
 import status_large_2 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_large_2.png';
 import status_large_3 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_large_3.png';
 import status_large_4 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_large_4.png';
+import status_all from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_all.png';
 import mail_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/mail-143.png';
 import baseURL from '../../api/util';
 
 function AdminPage(){
 
     const [status, setStatus] = useState("");
-    const [search, setSearch] = useState("");
+    const [fullName, setFullName] = useState("");
     const [users, setUsers] = useState([]);
     const [order, setOrder] = useState("ASC");
 
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage, setPostsPerPage] = useState(5);
+    const [search, setSearch] = useSearchParams();
+    const location = useLocation();
 
     useEffect( () => {
+        let status = search.get("status");
+        let fullName = search.get("full_name");
+        let page = search.get("page");
+        let order = search.get("order");
 
-        let resourceURL="";
-        let currentPage=1;
-        if(sessionStorage.getItem("mainPageAdminCurrent")){
-            currentPage = parseInt(sessionStorage.getItem("mainPageAdminCurrent"));
+        if(page!==null){
+            setCurrentPage(page);
         }
-        switch (sessionStorage.getItem("mainPageAdminAction")) {
-            case "filter":
-                resourceURL = "/api/user/filter?status=" + sessionStorage.getItem("status");
-                const filterPromise = getUsers(resourceURL);
-                filterPromise.then( data => setCurrentPage (currentPage));
-                break;
-            case "search":
-                resourceURL = "/api/user/search?name=" + sessionStorage.getItem("search");
-                const searchPromise = getUsers(resourceURL);
-                searchPromise.then( data => setCurrentPage (currentPage));
-                break;
-            default:
-                break;
-            }
+        if(order!==null){
+            setOrder(order);
+        }
+
+        if( (status!==null) && (fullName!==null)){
+            getUsers("/api/user/filter?status=" + status + "&full_name=" + fullName);
+        }
+
     },[])
 
     function handleChangeStatus(event){
-        sessionStorage.setItem("status", event.target.value);
-        sessionStorage.setItem("mainPageAdminAction", "filter");
+        const { value } = event.target;
+
+        setSearch({
+            status: value,
+            full_name: fullName,
+            page: currentPage,
+            order: order
+        })
+    
         setStatus(event.target.value);
-        getUsers("/api/user/filter?status=" + event.target.value);
+        getUsers("/api/user/filter?status=" + value + "&full_name=" + fullName);
     }
 
     function handleSubmit(event){
         event.preventDefault();
-        sessionStorage.setItem("mainPageAdminAction","search");
-        sessionStorage.setItem("search", search);
-        getUsers("/api/user/search?name=" + search);
+        setSearch({
+            status: status,
+            fullName: fullName,
+            page: currentPage,
+            order: order
+        })
+        getUsers("/api/user/filter?status=" + status + "&full_name=" + fullName);
     }
 
     function handleInput(event) {
-        setSearch(event.target.value);
+        setFullName(event.target.value);
     }
 
     async function getUsers(resourceURL){
@@ -119,6 +129,12 @@ function AdminPage(){
             );
             setUsers(sorted)
             setOrder("DSC");
+            setSearch({
+                status: status,
+                fullName: fullName,
+                page: currentPage,
+                order: "DSC"
+            })
         }
         if(order==="DSC"){
             const sorted = [...users].sort( (a,b) =>
@@ -126,6 +142,12 @@ function AdminPage(){
             );
             setUsers(sorted)
             setOrder("ASC");
+            setSearch({
+                status: status,
+                fullName: fullName,
+                page: currentPage,
+                order: "ASC"
+            })
         }
     }
 
@@ -137,14 +159,18 @@ function AdminPage(){
     // Change page
     const paginate = (pageNumber) => {
         setCurrentPage(pageNumber);
+        setSearch({
+            status: status,
+            fullName: fullName,
+            page: pageNumber,
+            order: order
+        })
     };
 
     const navigate = useNavigate();
 
     const toUserDetails=(event)=>{
-        sessionStorage.setItem("mainPageAdminCurrent", currentPage);
-        sessionStorage.setItem("targetUserId", event.target.id);
-        navigate('/details');
+        navigate('/user-details/' + event.target.id);
     }
 
     return(
@@ -158,7 +184,7 @@ function AdminPage(){
                             type="text"
                             name="search"
                             placeholder='Поиск кандидата'
-                            value={search}
+                            value={fullName}
                             onInput={handleInput}
                         />
                     </form>
@@ -213,6 +239,16 @@ function AdminPage(){
                             onChange={handleChangeStatus}
                         />
                         <label className='radio__label' htmlFor='myRadio4'><img src={status_large_4}/>Отклонен</label>
+                        <input 
+                            className="radio__input" 
+                            type="radio" 
+                            name="status"
+                            id='myRadio5'
+                            value=""
+                            checked={status===""}
+                            onChange={handleChangeStatus}
+                        />
+                        <label className='radio__label' htmlFor='myRadio5'><img src={status_all}/>Все</label>
                     </div>
                 </div>
                 <div className='table_container'>

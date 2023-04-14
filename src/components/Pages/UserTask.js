@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import "./UserTask.css";
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/util";
@@ -16,31 +17,37 @@ import { rust } from "@codemirror/lang-rust";
 import { sql } from "@codemirror/lang-sql";
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
-import { eclipse } from "@uiw/codemirror-theme-eclipse";
-import { solarizedLight, solarizedLightInit, solarizedDark, solarizedDarkInit } from "@uiw/codemirror-theme-solarized";
 
 function UserTask() {
 
     const [userTask, setUserTask] = useState({});
+    const [user, setUser] = useState({});
     const [viewedBlock, setViewedBlock] = useState("code");
-    const viewedTaskId = sessionStorage.getItem("targetTaskId");
     const [codeLanguage, setCodeLanguage] = useState([]);
     const [backToTopButton, setBackToTopButton] = useState(false);
     const [modal, setModal] = useState(false);
     const [comment, setComment] = useState("");
     const [codeDecoded, setCodeDecoded] = useState("");
+    const navigate = useNavigate();
+    let params = useParams();
 
     useEffect( () => {
 
-        const userTaskPromise = doGet("/api/user-task/" + viewedTaskId);
+        console.log(location?.state?.from?.pathname);
+
+        const userTaskPromise = doGet("/api/user-task/" + params.userTaskId);
         userTaskPromise.then((data) => {
-            console.log(data);
             setUserTask(data);
             setCodeLanguage(defineLanguage(data.languageName));
             //let code = Buffer.from(data.code,'base64')
             let code = atob(data.code);
             setCodeDecoded(code);
         });
+
+        const userPromise = doGet("/api/user/by-user-task/" + params.userTaskId);
+        userPromise.then( (data) => {
+            setUser(data);
+        })
 
         window.addEventListener("scroll", () => {
             if(window.scrollY > 100){
@@ -102,7 +109,7 @@ function UserTask() {
     }
 
     function handleSave(){
-        const updatePromise = doPut("/api/user-task/" + viewedTaskId, {
+        const updatePromise = doPut("/api/user-task/" + params.userTaskId, {
             comment: comment
         })
         updatePromise.then( () => location.reload() );
@@ -153,8 +160,11 @@ function UserTask() {
         <div className="user-task">
             <HeaderWork/>
             <div className="solution-header">
-                <span>Кузовкина Жанна Олеговна. Решение задачи Roman to Integer.</span>
-                <a href="/details"><span>Обратно</span><img src={back_icon} alt="close"/></a>
+                <span>{user.fullName}</span>
+                <span>Решение задачи {userTask.task?.name}</span>
+                <button className="solution-back-btn" onClick={() => navigate(-1)}>Обратно
+                    <img src={back_icon} alt="close"/>
+                </button>
             </div>
             <div className="solution-container">
                 <div className='solution-radio'>
@@ -219,8 +229,8 @@ function UserTask() {
                                 <div className="modal">
                                     <div className="overlay"></div>
                                     <div className="solution-modal">
-                                        <div>
-                                            <img src={close_icon} alt="close" onClick={expand}/>
+                                        <div className="solution-modal-close-icon-container">
+                                            <img className="solution-modal-close-icon" src={close_icon} alt="close" onClick={expand}/>
                                         </div>
                                         <table className="user-details-table">
                                             <thead>
@@ -309,7 +319,7 @@ function UserTask() {
                                 <li className="user-task-instructions-name">{userTask.task.name}</li>
                                 <li>
                                     <label>Сложность:</label>
-                                    <span>{userTask.task.taskDifficulty}</span>
+                                    <span>{userTask.task.taskDifficulty.name}</span>
                                 </li>
                                 <li>
                                     <label>Раздел:</label>
@@ -340,7 +350,7 @@ function UserTask() {
                         </div>
                     </>    
                 }
-                { backToTopButton && (<img  className="to-top" onClick={scrollUp}   src={slide_up_icon} alt="close"/>)}
+                { backToTopButton && (<img  className="to-top" onClick={scrollUp}   src={slide_up_icon} alt="scrollUp"/>)}
             </div>
         </div>
     )

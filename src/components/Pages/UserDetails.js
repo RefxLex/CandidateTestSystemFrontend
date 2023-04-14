@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import arrow_right from '/work/web_projects/CandidateTestSystemFrontend/src/images/arrow-right-40_2.png';
 import approve_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/approve_icon1.png';
 import reject_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-20.png';
 import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
 import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
-import close_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-window-30.png';
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/util";
 import "./UserDetails.css";
@@ -17,7 +16,7 @@ function UserDetails(){
     const [userTasks, setUserTasks] = useState([]);
     const [modal, setModal] = useState(false);
     const navigate = useNavigate();
-    const viewedId = sessionStorage.getItem("targetUserId");
+    let params = useParams();
 
     const [profile, setProfile]=useState({
         fullName: "",
@@ -28,21 +27,21 @@ function UserDetails(){
 
     useEffect( () => {
 
-        const userPromise = doGet("/api/user/" + viewedId);
+        const userPromise = doGet("/api/user/" + params.userId);
         userPromise.then( (data) => setUser(data));
 
-        const userTasksPromise = doGet("/api/user-task/all/" + viewedId);
+        const userTasksPromise = doGet("/api/user-task/find/" + params.userId);
         userTasksPromise.then( (data) => setUserTasks(data));
 
     },[])
 
     function approveUser() {
-        const userPromise = doPut("/api/user/status/" + viewedId + "?status=approved", {});
+        const userPromise = doPut("/api/user/status/" + params.userId + "?status=approved", {});
         userPromise.then( () => navigate("/admin"));
     }
 
     function rejectUser() {
-        const userPromise = doPut("/api/user/status/" + viewedId + "?status=rejected", {});
+        const userPromise = doPut("/api/user/status/" + params.userId + "?status=rejected", {});
         userPromise.then( () => navigate("/admin"));
     }
 
@@ -97,8 +96,7 @@ function UserDetails(){
     }
 
     function viewUserTask(event){
-        sessionStorage.setItem("targetTaskId", event.target.id);
-        navigate("/user-task")
+        navigate("/user-task/" + event.target.id)
     }
 
     function onChange(event){
@@ -192,7 +190,7 @@ function UserDetails(){
                 <div className="user-details-info">{user.info}
                     <img src={edit_icon} alt="edit" onClick={toggleModal} className="user-details-edit-icon"/>
                 </div>
-                <button className="user-details-assign-button">Назначить задание</button>
+                <button className="user-details-assign-button"  onClick={ () => navigate("/assign-task/" + params.userId)}>Назначить задание</button>
                 <div className="user-details-progress">
                     <span className={ (user.userStatus==="invited") ? "user-details-highlight" : "user-details-no-highlight" }>Приглашен</span>
                     <img src={arrow_right}></img>
@@ -225,6 +223,7 @@ function UserDetails(){
                                 <th>Задание</th>
                                 <th>Язык</th>
                                 <th>Назначено</th>
+                                <th>Выполнено</th>
                                 <th>Баллы</th>
                                 <th>Тестов пройдено</th>
                                 <th>Затраченное время</th>
@@ -242,12 +241,13 @@ function UserDetails(){
                                         <td>{userTask.task.name}</td>
                                         <td>{userTask.languageName}</td>
                                         <td>{userTask.assignDate.substring(0,10) + " " +  userTask.assignDate.substring(11,19)}</td>
+                                        <td>{userTask.submitDate?.substring(0,10) + " " +  userTask.submitDate?.substring(11,19)}</td>
                                         <td>{ (Math.round((parseInt(userTask.testsPassed)/parseInt(userTask.overallTestsCount))*100))
                                         .toString() + "%" }</td>
                                         <td>{ userTask.testsPassed + "/" + userTask.overallTestsCount }</td>
                                         <td>{userTask.timeSpent}</td>
-                                        <td>{userTask.userTaskResult.at(0).time}s</td>
-                                        <td>{userTask.userTaskResult.at(0).memory}Kb</td>
+                                        <td>{userTask.userTaskResult.at(0)?.time}s</td>
+                                        <td>{userTask.userTaskResult.at(0)?.memory}Kb</td>
                                     </tr>
                                 )
                             }
