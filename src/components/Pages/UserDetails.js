@@ -5,6 +5,7 @@ import approve_icon from '/work/web_projects/CandidateTestSystemFrontend/src/ima
 import reject_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-20.png';
 import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
 import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
+import delete_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-delete-20.png';
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/util";
 import "./UserDetails.css";
@@ -15,6 +16,7 @@ function UserDetails(){
     const [user, setUser] = useState({});
     const [userTasks, setUserTasks] = useState([]);
     const [modal, setModal] = useState(false);
+    const [deleteModal, setDeleteModal] = useState(false);
     const navigate = useNavigate();
     let params = useParams();
 
@@ -42,6 +44,44 @@ function UserDetails(){
 
     function rejectUser() {
         const userPromise = doPut("/api/user/status/" + params.userId + "?status=rejected", {});
+        userPromise.then( () => navigate("/admin"));
+    }
+
+    const toggleModal = () => {
+        setProfile({
+            fullName: user.fullName,
+            email: user.email,
+            phone: user.phone,
+            info: user.info
+        })
+        setModal(!modal);
+    }
+
+    function viewUserTask(event){
+        navigate("/user-task/" + event.target.id)
+    }
+
+    function onChange(event){
+        const {value, name} = event.target
+        setProfile( (prevObj) => ({
+            ...prevObj,
+            [name]: value
+        }))
+    }
+
+    function handleSave(){
+        const updatePromise =  doPut("/api/user/" + params.userId, {
+            email: profile.email,
+            fullName: profile.fullName,
+            phone: profile.phone,
+            info: profile.info
+        })
+        updatePromise.then( () => location.reload() );
+    }
+
+    function handleDelete(event){
+        event.preventDefault();
+        const userPromise = doPut("/api/user/delete/" + params.userId);
         userPromise.then( () => navigate("/admin"));
     }
 
@@ -85,41 +125,28 @@ function UserDetails(){
         }
     }
 
-    const toggleModal = () => {
-        setProfile({
-            fullName: user.fullName,
-            email: user.email,
-            phone: user.phone,
-            info: user.info
-        })
-        setModal(!modal);
-    }
-
-    function viewUserTask(event){
-        navigate("/user-task/" + event.target.id)
-    }
-
-    function onChange(event){
-        const {value, name} = event.target
-        setProfile( (prevObj) => ({
-            ...prevObj,
-            [name]: value
-        }))
-    }
-
-    function handleSave(){
-        const updatePromise =  doPut("/api/user/" + viewedId, {
-            email: profile.email,
-            fullName: profile.fullName,
-            phone: profile.phone,
-            info: profile.info
-        })
-        updatePromise.then( () => location.reload() );
-    }
-
     return(
         <div>
             <HeaderWork/>
+            {/* Modal delete user*/}
+            <>
+                {deleteModal &&
+                    <div className="modal">
+                        <div className="overlay"></div>
+                        <div className="modal-content">
+                            <div>
+                                <span>Вы точно хотите удалить пользователя?</span>
+                            </div>
+                            <form>
+                                <div className="modal-btn-container">
+                                    <button onClick={() => setDeleteModal(!deleteModal)} className="user-details-accept-button">Нет</button>
+                                    <button onClick={handleDelete} className="user-details-cancel-button">Да</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </>
             {/* Modal edit profile*/}
             <>
                 {modal &&
@@ -189,6 +216,7 @@ function UserDetails(){
                 </ul>
                 <div className="user-details-info">{user.info}
                     <img src={edit_icon} alt="edit" onClick={toggleModal} className="user-details-edit-icon"/>
+                    <img src={delete_icon} alt="delete" onClick={() => setDeleteModal(!deleteModal)} className="user-details-edit-icon"/>
                 </div>
                 <button className="user-details-assign-button"  onClick={ () => navigate("/assign-task/" + params.userId)}>Назначить задание</button>
                 <div className="user-details-progress">

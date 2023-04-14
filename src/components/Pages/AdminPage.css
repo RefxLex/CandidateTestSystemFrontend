@@ -1,4 +1,16 @@
 
+
+
+
+
+/********************/
+/****Admin page ****/
+/*******************/
+
+
+
+
+
 .content-table {
     border-collapse: collapse;
     margin: 25px 0;
@@ -150,3 +162,38 @@
     font-weight: 500;
     font-size: 16px;
 }
+
+.admin_page_invite_button {
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    margin: 20px 30px 20px 20px;
+    padding: 10px 10px;
+    color: white;
+    background-color: rgba(63, 85, 200, 1);
+    border: none;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.admin_page_invite_button:hover {
+    background-color: rgba(63, 85, 200, 0.8);
+}
+
+
+
+
+
+
+
+
+/***************************/
+/**** Edit Profile Modal****/
+/***************************/
+
+
+
+
+
+

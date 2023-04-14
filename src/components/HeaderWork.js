@@ -15,7 +15,7 @@ function HeaderWork(){
         if(auth?.roles?.includes("ROLE_USER")){
             navigate("/user");
         }else if(auth?.roles?.includes("ROLE_MODERATOR")){
-            navigate("/moderator");
+            navigate("/admin");
         }else if (auth?.roles?.includes("ROLE_ADMIN")){
             navigate("/admin");
         }else{
@@ -25,17 +25,13 @@ function HeaderWork(){
 
     return(
         <header>
-            <img className="logo" src={logos} alt="cleverhire_logo" onClick={roleNav}/>
+            <img className="logo" src={logos} alt="cleverhire_logo" onClick={() => navigate("/")}/>
             <nav>
                 <ul className="nav__links">
                     { ((auth?.roles?.includes("ROLE_MODERATOR")) || (auth?.roles?.includes("ROLE_ADMIN"))) 
                         ?<li><a href="/admin">Кандидаты</a></li>
                         : false
                     }
-                    {/* ((auth?.roles?.includes("ROLE_MODERATOR")) || (auth?.roles?.includes("ROLE_ADMIN"))) 
-                        ?<li><a href="#">Назначенные задания</a></li>
-                        : false
-                    */}
                     { (auth?.roles?.includes("ROLE_ADMIN"))
                         ?<li><a href="#">Задачи</a></li>
                         : false

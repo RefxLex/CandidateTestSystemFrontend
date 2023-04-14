@@ -29,6 +29,14 @@ function AdminPage(){
     const [search, setSearch] = useSearchParams();
     const location = useLocation();
 
+    const [modal, setModal] = useState(false);
+    const [profile, setProfile]=useState({
+        fullName: "",
+        email: "",
+        phone: "",
+        info: ""
+    })
+
     useEffect( () => {
         let status = search.get("status");
         let fullName = search.get("full_name");
@@ -173,9 +181,117 @@ function AdminPage(){
         navigate('/user-details/' + event.target.id);
     }
 
+    const toggleModal = () => {
+        setProfile({
+            fullName: "",
+            email: "",
+            phone: "",
+            info: ""
+        })
+        setModal(!modal);
+    }
+
+    function onChange(event){
+        const {value, name} = event.target
+        setProfile( (prevObj) => ({
+            ...prevObj,
+            [name]: value
+        }))
+    }
+
+    function handleSave(){
+        const userPromise = doPost("/api/user/create", profile);
+        userPromise.then( (data) => {
+            toggleModal();
+            setUsers([...users, data]);
+        });
+    }
+
+    async function doPost(resourceURL, body){
+        try{
+            const response = await fetch (baseURL + resourceURL, {
+                method:"POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                  },
+                body: JSON.stringify(body),
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            return result;
+        }
+        catch(error){
+            console.error("There has been a problem with your fetch operation:", error);
+        }
+    }
+
     return(
         <div>
             <HeaderWork/>
+            {/* Modal add user*/}
+            <>
+                {modal &&
+                    <div className="modal">
+                        <div className="overlay"></div>
+                        <div className="modal-content">
+                            <div>
+                                <span>Данные кандидата</span>
+                            </div>
+                            <form onSubmit={ (e) => e.preventDefault()}>
+                                <div className="modal-txt-field">
+                                    <label htmlFor="fullName">ФИО</label>
+                                    <input
+                                        type="text"
+                                        name="fullName"
+                                        id="fullName"
+                                        onChange={onChange}
+                                        value={profile.fullName}
+                                        required
+                                    />
+                                </div>
+                                <div className="modal-txt-field">
+                                    <label htmlFor="email">Эл. почта</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        id="email"
+                                        onChange={onChange}
+                                        value={profile.email}
+                                        required
+                                    />
+                                </div>
+                                <div className="modal-txt-field">
+                                    <label htmlFor="phone">Тел.</label>
+                                    <input 
+                                        type="text"
+                                        name="phone"
+                                        id="phone"
+                                        onChange={onChange}
+                                        value={profile.phone}
+                                    />
+                                </div>
+                                <div className="modal-txt-field">
+                                    <label htmlFor="info">Инфо.</label>
+                                    <textarea
+                                        className="modal-info"
+                                        name="info"
+                                        onChange={onChange}
+                                        value={profile.info}
+                                    />
+                                </div>
+                                <div className="modal-btn-container">
+                                    <button onClick={handleSave} className="user-details-accept-button">Сохранить</button>
+                                    <button onClick={toggleModal} className="user-details-cancel-button">Отмена</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </>
             <div className='admin_page_container'>
                 <div className='admin_page_search_container'>
                     <form onSubmit={handleSubmit} className='admin_page_search_bar'>
@@ -249,6 +365,9 @@ function AdminPage(){
                             onChange={handleChangeStatus}
                         />
                         <label className='radio__label' htmlFor='myRadio5'><img src={status_all}/>Все</label>
+                    </div>
+                    <div className='admin_page_invite_button_container'>
+                        <button onClick={toggleModal} className="admin_page_invite_button">Добавить кандидата</button>
                     </div>
                 </div>
                 <div className='table_container'>

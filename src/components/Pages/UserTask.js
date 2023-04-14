@@ -7,6 +7,7 @@ import back_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images
 import slide_up_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-slide-up-50.png';
 import expand_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-more-information-20.png';
 import close_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-window-30.png';
+import reject_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-20.png';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { java } from '@codemirror/lang-java';
@@ -28,6 +29,7 @@ function UserTask() {
     const [modal, setModal] = useState(false);
     const [comment, setComment] = useState("");
     const [codeDecoded, setCodeDecoded] = useState("");
+    const [deleteModal, setDeleteModal] = useState(false);
     const navigate = useNavigate();
     let params = useParams();
 
@@ -42,6 +44,7 @@ function UserTask() {
             //let code = Buffer.from(data.code,'base64')
             let code = atob(data.code);
             setCodeDecoded(code);
+            //console.log(data);
         });
 
         const userPromise = doGet("/api/user/by-user-task/" + params.userTaskId);
@@ -60,9 +63,9 @@ function UserTask() {
     },[])
 
     function handleRadio(event){
-        console.log(event.target.value);
+        //console.log(event.target.value);
         if( (event.target.value==="comment")){
-            console.log(userTask.comment);
+            //console.log(userTask.comment);
             setComment(userTask.comment);
         }
         setViewedBlock(event.target.value);
@@ -115,6 +118,12 @@ function UserTask() {
         updatePromise.then( () => location.reload() );
     }
 
+    function handleDelete(event){
+        event.preventDefault();
+        const userTaskPromise = doDelete("/api/user-task/" + params.userTaskId);
+        userTaskPromise.then( () => navigate(-1));
+    }
+
     async function doGet(resourceURL){
         try{
             const response = await fetch (baseURL + resourceURL, {
@@ -155,10 +164,47 @@ function UserTask() {
         }
     }
 
+    async function doDelete(resourceURL){
+        try{
+            const response = await fetch (baseURL + resourceURL, {
+                method:"DELETE",
+                credentials: "include"
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            return result;
+        }
+        catch(error){
+            console.error("There has been a problem with your fetch operation:", error);
+        }
+    }
+
     return(
 
         <div className="user-task">
             <HeaderWork/>
+            {/* Modal delete user task*/}
+            <>
+                {deleteModal &&
+                    <div className="modal">
+                        <div className="overlay"></div>
+                        <div className="modal-content">
+                            <div>
+                                <span>Вы точно хотите отменить задание?</span>
+                            </div>
+                            <form>
+                                <div className="modal-btn-container">
+                                    <button onClick={() => setDeleteModal(!deleteModal)} className="user-details-accept-button">Нет</button>
+                                    <button onClick={handleDelete} className="user-details-cancel-button">Да</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </>
             <div className="solution-header">
                 <span>{user.fullName}</span>
                 <span>Решение задачи {userTask.task?.name}</span>
@@ -265,8 +311,8 @@ function UserTask() {
                             }   
                         </>}
                         <div className="user-task-tests-header">
-                            <span className="user-task-tests-passed">Успешно: 3</span>
-                            <span className="user-task-tests-failed">Провалено: 0</span>
+                            <span className="user-task-tests-passed">Успешно: {userTask.testsPassed}</span>
+                            <span className="user-task-tests-failed">Провалено: {userTask.testsFailed}</span>
                         </div>
 
                         <div className="user-task-tests-container">
@@ -350,6 +396,12 @@ function UserTask() {
                         </div>
                     </>    
                 }
+                <div className="user-task-cancel-btn-container">
+                    <button onClick={() => setDeleteModal(!deleteModal)} className="user-details-cancel-button">
+                        <img src={reject_icon}></img>
+                        <span>Отменить задание</span>
+                    </button>
+                </div>
                 { backToTopButton && (<img  className="to-top" onClick={scrollUp}   src={slide_up_icon} alt="scrollUp"/>)}
             </div>
         </div>

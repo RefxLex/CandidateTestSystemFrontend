@@ -31,7 +31,7 @@ export default function Header(){
         if(auth?.roles?.includes("ROLE_USER")){
             navigate("/user");
         }else if(auth?.roles?.includes("ROLE_MODERATOR")){
-            navigate("/moderator");
+            navigate("/admin");
         }else if (auth?.roles?.includes("ROLE_ADMIN")){
             navigate("/admin");
         }else{
