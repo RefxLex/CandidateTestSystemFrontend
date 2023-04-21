@@ -44,7 +44,6 @@ function UserTask() {
             //let code = Buffer.from(data.code,'base64')
             let code = atob(data.code);
             setCodeDecoded(code);
-            //console.log(data);
         });
 
         const userPromise = doGet("/api/user/by-user-task/" + params.userTaskId);
@@ -63,9 +62,7 @@ function UserTask() {
     },[])
 
     function handleRadio(event){
-        //console.log(event.target.value);
         if( (event.target.value==="comment")){
-            //console.log(userTask.comment);
             setComment(userTask.comment);
         }
         setViewedBlock(event.target.value);

@@ -81,7 +81,7 @@ function UserDetails(){
 
     function handleDelete(event){
         event.preventDefault();
-        const userPromise = doPut("/api/user/delete/" + params.userId);
+        const userPromise = doDelete("/api/user/" + params.userId);
         userPromise.then( () => navigate("/admin"));
     }
 
@@ -91,6 +91,24 @@ function UserDetails(){
                 method:"GET",
                 credentials: "include"
             })
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            return result;
+        }
+        catch(error){
+            console.error("There has been a problem with your fetch operation:", error);
+        }
+    }
+
+    async function doDelete(resourceURL){
+        try{
+            const response = await fetch (baseURL + resourceURL, {
+                method:"DELETE",
+                credentials: "include"
+            });
             if (!response.ok) {
                 throw new Error(`HTTP error: ${response.status}`);
             }

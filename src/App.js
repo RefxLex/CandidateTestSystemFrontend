@@ -11,6 +11,8 @@ import Missing from './components/Pages/Missing';
 import Unauthorized from './components/Pages/Unauthorized';
 import UserTask from './components/Pages/UserTask';
 import AssignTask from './components/Pages/AssignTask';
+import Tasks from './components/Pages/Tasks';
+import EditTask from './components/Pages/EditTask';
 
 
 function App(){
@@ -33,6 +35,10 @@ function App(){
                 <Route path="user-details/:userId" element={<UserDetails />}/>
                 <Route path="user-task/:userTaskId" element={<UserTask />}/>
                 <Route path="assign-task/:userId" element={<AssignTask/>}/>
+            </Route>
+            <Route element={<RequireAuth allowedRoles={["ROLE_ADMIN"]}/>}>
+                <Route path="/tasks" element={<Tasks />}/>
+                <Route path="/task/edit/:taskId" element={<EditTask />}/>
             </Route>
 
             {/* catch all */}
