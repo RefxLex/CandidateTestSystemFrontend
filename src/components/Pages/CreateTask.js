@@ -1,26 +1,20 @@
-import React, { useEffect, useState} from "react";
-import { useNavigate, useParams } from 'react-router-dom';
-import baseURL from "../../api/util";
-import "./EditTask.css";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./CreateTask.css";
 import HeaderWork from "../HeaderWork";
-import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
+import baseURL from "../../api/util";
 import delete_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-delete-20.png';
-import reject_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-20.png';
 
 
-function EditTask(){
+function CreateTask(){
 
-    const params = useParams();
     const navigate = useNavigate();
     const [inputModal, setInputModal] = useState(false);
-    const [deleteModal, setDeleteModal] = useState(false);
-    const [editMode, setEditMode] = useState(false);
-    const [editId, setEditId] = useState();
     const [levels, setLevels] = useState([]);
     const [topics, setTopics] = useState([]);
     const [newTaskInputArray, setNewTaskInputArray] = useState([]);
     const [taskInput, setTaskInput] = useState({
-        id: "",
+        id:"",
         input: "",
         output: ""
     });
@@ -32,17 +26,6 @@ function EditTask(){
     })
 
     useEffect (() => {
-
-        const taskPromise = doGet("/api/task/" + params.taskId);
-        taskPromise.then( (data) => {
-            setNewTask({
-                name: data.name,
-                topicId: data.topic.id,
-                difficultyId: data.taskDifficulty.id,
-                description: data.description
-            })
-            setNewTaskInputArray(data.taskTestInput);
-        });
 
         const levelPromise = doGet("/api/task/difficulty");
         levelPromise.then( (data) => setLevels(data));
@@ -62,30 +45,10 @@ function EditTask(){
             description: newTask.description,
             taskTestInput: newTaskInputArray
         }
-        const taskPromise = doPut("/api/task/" + params.taskId, body);
+        const taskPromise = doPost("/api/task/create", body);
         taskPromise.then( (data) => navigate("/tasks"));
     }
 
-    function handleDeleteTask(event){
-        event.preventDefault();
-        const taskPromise = doSoftDelete("/api/task/delete/" + params.taskId);
-        taskPromise.then( () => navigate("/tasks"));
-    }
-
-    function handleEdit(event){
-        const { id, value } = event.target;
-        let testInput = newTaskInputArray.at(id);
-        setEditId(id);
-        setEditMode(true);
-        setInputModal(!inputModal);
-        setTaskInput({
-            id: testInput.id,
-            input: testInput.input,
-            output: testInput.output
-        });
-    }
-
-    
     function handleRemove(event){
         const { id, value } = event.target;
         let newArray = [];
@@ -102,28 +65,10 @@ function EditTask(){
         {
             setNewTaskInputArray( (prevArr) => [...prevArr, taskInput]);
             setTaskInput({
-                id:"",
                 input: "",
                 output: ""
             });
         }
-        setInputModal(!inputModal);
-    }
-
-    function handleTestInputEdit(event){
-        if( (taskInput.input!=="") && (taskInput.output!=="") )
-        {
-            let array = [...newTaskInputArray];
-            array.at(editId).input = taskInput.input;
-            array.at(editId).output = taskInput.output;
-            setNewTaskInputArray(array);
-            setTaskInput({
-                id:"",
-                input: "",
-                output: ""
-            });
-        }
-        setEditMode(false);
         setInputModal(!inputModal);
     }
 
@@ -161,10 +106,10 @@ function EditTask(){
         }
     }
 
-    async function doPut(resourceURL, body){
+    async function doPost(resourceURL, body){
         try{
             const response = await fetch (baseURL + resourceURL, {
-                method:"PUT",
+                method:"POST",
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
@@ -183,46 +128,9 @@ function EditTask(){
         }
     }
 
-    async function doSoftDelete(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"PUT",
-                credentials: "include"
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
     return(
         <>
             <HeaderWork/>
-            {/* Modal delete task*/}
-            <>
-                {deleteModal &&
-                    <div className="modal">
-                        <div className="overlay"></div>
-                        <div className="modal-content">
-                            <div>
-                                <span>Вы точно хотите удалить задание?</span>
-                            </div>
-                            <form>
-                                <div className="modal-btn-container">
-                                    <button onClick={() => setDeleteModal(!deleteModal)} className="user-details-accept-button">Нет</button>
-                                    <button onClick={handleDeleteTask} className="user-details-cancel-button">Да</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                }
-            </>
             {/* Add Test Input Modal */}
             {   inputModal && 
                             <>
@@ -258,10 +166,7 @@ function EditTask(){
                                         </div>
                                         <div className="modal-btn-container">
                                             <button onClick={() => setInputModal(!inputModal)} className="user-details-cancel-button">Отмена</button>
-                                            { editMode
-                                                ? <button onClick={handleTestInputEdit} className="user-details-accept-button">Сохранить</button>
-                                                : <button onClick={handleTestDataArray} className="user-details-accept-button">Добавить</button>
-                                            }
+                                            <button onClick={handleTestDataArray} className="user-details-accept-button">Добавить</button>
                                         </div>
                                     </div>
                                 </div>
@@ -341,8 +246,7 @@ function EditTask(){
                                 <tr key={rowId}>
                                         <td>
                                             <div className="task-task-item-btns">
-                                                <img onClick={handleEdit} id={rowId} src={edit_icon} alt="edit" className="user-details-edit-icon"/>
-                                                <img onClick={handleRemove} id={rowId} src={delete_icon} alt="edit" className="user-details-edit-icon"/>
+                                                <img onClick={handleRemove} id={rowId} src={delete_icon} alt="remove" className="user-details-edit-icon"/>
                                             </div>
                                         </td>
                                       <td className="assign-task-table-column">{rowId}</td>
@@ -353,18 +257,12 @@ function EditTask(){
                         }
                     </tbody>
                 </table>
-                <div className="edit-task-btn-container">
-                    <button onClick={() => setDeleteModal(!deleteModal)} className="user-details-cancel-button">
-                        <img src={reject_icon}></img>
-                        <span>Удалить задание</span>
-                    </button>
-                    <div>
-                        <button onClick={handleAddTask} className="user-details-accept-button">Сохранить</button>
-                    </div>
+                <div className="modal-btn-container">
+                    <button onClick={handleAddTask} className="user-details-accept-button">Сохранить</button>
                 </div>
             </div>
         </>
     )
 }
 
-export default EditTask;
+export default CreateTask;

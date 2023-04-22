@@ -1,0 +1,31 @@
+.edit-task {
+    padding: 30px 30px;
+}
+
+.edit-task-input {
+    width: 600px;
+    padding: 0 7px;
+    height:  50px;
+    border: 1px solid #8e8e8e;
+    background: white;
+    outline: none;
+    border-radius: 6px;
+    margin: 10px 0 15px 15px;
+    font-size: 16px;
+}
+
+.edit-task-test-block {
+    padding: 15px 0px;
+}
+
+.edit-task-btn-container {
+    display: flex;
+    align-items: center;
+}
+
+.edit-task-btn-container > div {
+    padding-left: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+}

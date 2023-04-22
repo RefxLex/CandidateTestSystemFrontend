@@ -341,8 +341,8 @@ function UserTask() {
                                                     <td>{result.status}</td>
                                                     <td>{result.time}</td>
                                                     <td>{result.memory}</td>
-                                                    <td>{result.taskTestInput.input}</td>
-                                                    <td>{result.taskTestInput.output}</td>
+                                                    <td>{result.testInput}</td>
+                                                    <td>{result.expectedOutput}</td>
                                                     <td>{result.stdout}</td>
                                                     <td>{result.exit_code}</td>
                                                     <td>{result.compile_output}</td>

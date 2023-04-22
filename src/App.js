@@ -13,6 +13,7 @@ import UserTask from './components/Pages/UserTask';
 import AssignTask from './components/Pages/AssignTask';
 import Tasks from './components/Pages/Tasks';
 import EditTask from './components/Pages/EditTask';
+import CreateTask from './components/Pages/CreateTask';
 
 
 function App(){
@@ -39,6 +40,7 @@ function App(){
             <Route element={<RequireAuth allowedRoles={["ROLE_ADMIN"]}/>}>
                 <Route path="/tasks" element={<Tasks />}/>
                 <Route path="/task/edit/:taskId" element={<EditTask />}/>
+                <Route path="/task/create" element={<CreateTask />}/>
             </Route>
 
             {/* catch all */}
