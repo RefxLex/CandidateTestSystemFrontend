@@ -14,6 +14,8 @@ import AssignTask from './components/Pages/AssignTask';
 import Tasks from './components/Pages/Tasks';
 import EditTask from './components/Pages/EditTask';
 import CreateTask from './components/Pages/CreateTask';
+import Topics from './components/Pages/Topics';
+import Levels from './components/Pages/Levels';
 
 
 function App(){
@@ -41,6 +43,8 @@ function App(){
                 <Route path="/tasks" element={<Tasks />}/>
                 <Route path="/task/edit/:taskId" element={<EditTask />}/>
                 <Route path="/task/create" element={<CreateTask />}/>
+                <Route path="/topics" element={<Topics />}/>
+                <Route path="/levels" element={<Levels />}/>
             </Route>
 
             {/* catch all */}

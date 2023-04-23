@@ -44,7 +44,7 @@ function EditTask(){
             setNewTaskInputArray(data.taskTestInput);
         });
 
-        const levelPromise = doGet("/api/task/difficulty");
+        const levelPromise = doGet("/api/level/all");
         levelPromise.then( (data) => setLevels(data));
     
         const topicPromise = doGet("/api/topic/all");
@@ -123,6 +123,12 @@ function EditTask(){
                 output: ""
             });
         }
+        setEditMode(false);
+        setInputModal(!inputModal);
+    }
+
+    function handleCancel(event){
+        event.preventDefault()
         setEditMode(false);
         setInputModal(!inputModal);
     }
@@ -230,7 +236,11 @@ function EditTask(){
                                     <div className="overlay"></div>
                                     <div className="modal-content">
                                         <div className="task-modal-content-label">
-                                            <span>Новый тест</span>
+                                        {
+                                            editMode
+                                                ? <span>Изменить тест</span>
+                                                : <span>Новый тест</span>
+                                        }
                                         </div>
                                         <div>
                                             <label htmlFor="taskInput">Входные данные:</label>
@@ -257,7 +267,7 @@ function EditTask(){
                                                 />
                                         </div>
                                         <div className="modal-btn-container">
-                                            <button onClick={() => setInputModal(!inputModal)} className="user-details-cancel-button">Отмена</button>
+                                            <button onClick={handleCancel} className="user-details-cancel-button">Отмена</button>
                                             { editMode
                                                 ? <button onClick={handleTestInputEdit} className="user-details-accept-button">Сохранить</button>
                                                 : <button onClick={handleTestDataArray} className="user-details-accept-button">Добавить</button>

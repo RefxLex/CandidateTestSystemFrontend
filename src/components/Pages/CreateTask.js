@@ -27,7 +27,7 @@ function CreateTask(){
 
     useEffect (() => {
 
-        const levelPromise = doGet("/api/task/difficulty");
+        const levelPromise = doGet("/api/level/all");
         levelPromise.then( (data) => setLevels(data));
     
         const topicPromise = doGet("/api/topic/all");

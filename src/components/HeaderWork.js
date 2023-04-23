@@ -37,11 +37,11 @@ function HeaderWork(){
                         : false
                     }
                     { (auth?.roles?.includes("ROLE_ADMIN"))
-                        ?<li><a href="/topic">Разделы</a></li>
+                        ?<li><a href="/topics">Разделы</a></li>
                         : false
                     }
                     { (auth?.roles?.includes("ROLE_ADMIN"))
-                        ?<li><a href="/level">Сложность</a></li>
+                        ?<li><a href="/levels">Сложность</a></li>
                         : false
                     }
                     { (auth?.roles?.includes("ROLE_USER"))

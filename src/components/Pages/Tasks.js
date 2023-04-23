@@ -37,7 +37,7 @@ function Task(){
         const taskPromise = doGet("/api/task/filter?topic_id=" + "&level_id=" + "&name=");
         taskPromise.then( (data) => setTasks(data));
     
-        const levelPromise = doGet("/api/task/difficulty");
+        const levelPromise = doGet("/api/level/all");
         levelPromise.then( (data) => setLevels(data));
     
         const topicPromise = doGet("/api/topic/all");
@@ -278,7 +278,6 @@ function Task(){
                                             <div className="task-task-item-btns">
                                                 <img id={task.id} onClick={(event) => navigate("/task/edit/" + event.target.id)} 
                                                     src={edit_icon} alt="edit" className="user-details-edit-icon"/>
-                                                {/*<img id={task.id} onClick={handleDelete} src={delete_icon} alt="delete" className="user-details-edit-icon"/>*/}
                                             </div>
                                         </td>
                                         <td className="assign-task-table-column">{task.name}</td>

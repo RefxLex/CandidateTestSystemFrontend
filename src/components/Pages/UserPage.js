@@ -5,7 +5,11 @@ function UserPage(){
     return(
         <div>
             <HeaderWork/>
-            <h1>User page</h1>
+            <div className='user-page'>
+                <table className='assign-task-table'>
+                    
+                </table>
+            </div>
         </div>
     )
 }
