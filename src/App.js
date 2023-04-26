@@ -16,6 +16,8 @@ import EditTask from './components/Pages/EditTask';
 import CreateTask from './components/Pages/CreateTask';
 import Topics from './components/Pages/Topics';
 import Levels from './components/Pages/Levels';
+import ViewTask from './components/Pages/ViewTask';
+import StartTask from './components/Pages/StartTask';
 
 
 function App(){
@@ -32,6 +34,8 @@ function App(){
             {/* protected routes*/}
             <Route element={<RequireAuth allowedRoles={["ROLE_USER"]} />}>
                 <Route path="user" element={<UserPage />}/>
+                <Route path="user/task/view/:userTaskId" element={<ViewTask />}/>
+                <Route path="user/task/start/:userTaskId" element={<StartTask />}/>               
             </Route>
             <Route element={<RequireAuth allowedRoles={["ROLE_ADMIN", "ROLE_MODERATOR"]}/>}>
                 <Route path="admin" element={<AdminPage />}/>

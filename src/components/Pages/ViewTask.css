@@ -1,0 +1,8 @@
+
+.start-task-comment-container > p{
+    margin: 30px 30px;
+    padding: 25px 15px;
+    border: 1px solid #8e8e8e;
+    border-radius: 6px;
+    max-width: 700px;
+}

@@ -45,7 +45,7 @@ function HeaderWork(){
                         : false
                     }
                     { (auth?.roles?.includes("ROLE_USER"))
-                        ?<li><a href="#">Мои задания</a></li>
+                        ?<li><a href="/user">Мои задания</a></li>
                         : false
                     }
                 </ul>

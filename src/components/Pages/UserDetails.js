@@ -7,7 +7,7 @@ import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images
 import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
 import delete_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-delete-20.png';
 import HeaderWork from "../HeaderWork";
-import baseURL from "../../api/util";
+import baseURL from "../../api/baseUrl";
 import "./UserDetails.css";
 
 
@@ -83,6 +83,14 @@ function UserDetails(){
         event.preventDefault();
         const userPromise = doDelete("/api/user/" + params.userId);
         userPromise.then( () => navigate("/admin"));
+    }
+
+    function calcSubmitDate(userTask){
+        let submiteDate = ""
+        if(((userTask.submitDate)!==undefined) && ((userTask.submitDate)!==null)){
+            submiteDate = userTask.submitDate.substring(0,10) + " " +  userTask.submitDate.substring(11,19);
+        }
+        return submiteDate
     }
 
     async function doGet(resourceURL){
@@ -287,7 +295,7 @@ function UserDetails(){
                                         <td>{userTask.task.name}</td>
                                         <td>{userTask.languageName}</td>
                                         <td>{userTask.assignDate.substring(0,10) + " " +  userTask.assignDate.substring(11,19)}</td>
-                                        <td>{userTask.submitDate?.substring(0,10) + " " +  userTask.submitDate?.substring(11,19)}</td>
+                                        <td>{calcSubmitDate(userTask)}</td>
                                         <td>{ (Math.round((parseInt(userTask.testsPassed)/parseInt(userTask.overallTestsCount))*100))
                                         .toString() + "%" }</td>
                                         <td>{ userTask.testsPassed + "/" + userTask.overallTestsCount }</td>

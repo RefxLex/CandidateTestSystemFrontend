@@ -14,7 +14,7 @@ import status_large_3 from '/work/web_projects/CandidateTestSystemFrontend/src/i
 import status_large_4 from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_large_4.png';
 import status_all from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_all.png';
 import mail_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/mail-143.png';
-import baseURL from '../../api/util';
+import baseURL from '../../api/baseUrl';
 
 function AdminPage(){
 

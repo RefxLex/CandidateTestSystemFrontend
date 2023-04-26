@@ -3,7 +3,7 @@ import Header from "../Header";
 import { useContext } from "react";
 import AuthContext from "../../context/AuthProvider";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import baseURL from "../../api/util";
+import baseURL from "../../api/baseUrl";
 import "./Login.css";
 
 function Login(){

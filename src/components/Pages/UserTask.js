@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./UserTask.css";
 import HeaderWork from "../HeaderWork";
-import baseURL from "../../api/util";
+import baseURL from "../../api/baseUrl";
 import back_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-back-arrow-30_2.png';
 import slide_up_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-slide-up-50.png';
 import expand_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-more-information-20.png';
@@ -21,6 +21,7 @@ import { languages } from '@codemirror/language-data';
 
 function UserTask() {
 
+    
     const [userTask, setUserTask] = useState({});
     const [user, setUser] = useState({});
     const [viewedBlock, setViewedBlock] = useState("code");
@@ -256,10 +257,8 @@ function UserTask() {
                         <div className="user-details-code-container">
                             <CodeMirror
                                 value={codeDecoded}
-                                //value={codetext}
                                 extensions={codeLanguage}
                                 theme="light"
-                                //onChange={onChange}
                                 readOnly={true}
                             />
                         </div>
