@@ -400,7 +400,9 @@ function AdminPage(){
                             }
                         </tbody>
                     </table>
-                    <Pagination postsPerPage={postsPerPage} totalPosts={users.length} paginate={paginate} />
+                    <div className="assign-task-pagination">
+                        <Pagination postsPerPage={postsPerPage} totalPosts={users.length} paginate={paginate} />
+                    </div>
                 </div>
             </div>
         </div>

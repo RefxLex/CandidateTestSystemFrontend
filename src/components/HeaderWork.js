@@ -51,7 +51,14 @@ function HeaderWork(){
                 </ul>
             </nav>
             <div>
-                <button className="header__main__button">Профиль</button>
+                { (auth?.roles?.includes("ROLE_USER"))
+                        ? <button onClick={() => navigate("/user/profile")} className="header__main__button">Профиль</button>
+                        : false
+                }
+                {  (auth?.roles?.includes("ROLE_ADMIN"))
+                        ? <button onClick={() => navigate("/admin/add")} className="header__main__button">Персонал</button>
+                        : false
+                }
             </div>
         </header>
     )

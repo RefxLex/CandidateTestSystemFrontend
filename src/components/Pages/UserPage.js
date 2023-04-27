@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HeaderWork from '../HeaderWork';
 import baseURL from '../../api/baseUrl';
@@ -10,6 +10,7 @@ function UserPage(){
 
     const navigate = useNavigate();
     const id = localStorage.getItem("id");
+    const { auth } = useContext(AuthContext);
     const [userTasks, setUserTasks] = useState([]);
     const [startModal, setStartModal] = useState(false);
     const [selectedId, setSelectedId] = useState();

@@ -18,6 +18,8 @@ import Topics from './components/Pages/Topics';
 import Levels from './components/Pages/Levels';
 import ViewTask from './components/Pages/ViewTask';
 import StartTask from './components/Pages/StartTask';
+import UserProfile from './components/Pages/UserProfile';
+import AddAdmins from './components/Pages/AddAdmins';
 
 
 function App(){
@@ -35,7 +37,8 @@ function App(){
             <Route element={<RequireAuth allowedRoles={["ROLE_USER"]} />}>
                 <Route path="user" element={<UserPage />}/>
                 <Route path="user/task/view/:userTaskId" element={<ViewTask />}/>
-                <Route path="user/task/start/:userTaskId" element={<StartTask />}/>               
+                <Route path="user/task/start/:userTaskId" element={<StartTask />}/>
+                <Route path="user/profile" element={<UserProfile />}/>                
             </Route>
             <Route element={<RequireAuth allowedRoles={["ROLE_ADMIN", "ROLE_MODERATOR"]}/>}>
                 <Route path="admin" element={<AdminPage />}/>
@@ -49,6 +52,7 @@ function App(){
                 <Route path="/task/create" element={<CreateTask />}/>
                 <Route path="/topics" element={<Topics />}/>
                 <Route path="/levels" element={<Levels />}/>
+                <Route path="/admin/add" element={<AddAdmins />}/>
             </Route>
 
             {/* catch all */}

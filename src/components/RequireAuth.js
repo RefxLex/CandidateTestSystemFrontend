@@ -4,7 +4,7 @@ import AuthContext from "../context/AuthProvider";
 import React, { useContext} from "react";
 
 const RequireAuth = ({ allowedRoles }) => {
-    const { auth } = useContext(AuthContext)
+    const { auth } = useContext(AuthContext);
     const location = useLocation();
 
     const id = localStorage.getItem("id");
