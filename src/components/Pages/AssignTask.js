@@ -4,6 +4,7 @@ import baseURL from "../../api/baseUrl";
 import HeaderWork from "../HeaderWork";
 import Pagination from "../Pagination";
 import "./AssignTask.css";
+import CustomRequest from "../../hooks/CustomRequest";
 import chevron_down from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-chevron-down-20.png";
 import chevron_up from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-chevron-up-20.png";
 import check_done from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-done-21.png";
@@ -40,10 +41,10 @@ function AssignTask(){
 
     useEffect( () => {
 
-        const userPromise = doGet("/api/user/" + params.userId);
+        const userPromise = CustomRequest.doGet(baseURL + "/api/user/" + params.userId);
         userPromise.then( (data) => setUser(data));
 
-        const taskPromise = doGet("/api/task/filter?topic_id=" + "&level_id=" + "&name=");
+        const taskPromise = CustomRequest.doGet(baseURL + "/api/task/filter?topic_id=" + "&level_id=" + "&name=");
         taskPromise.then( (data) => {
             let map = new Map();
             for (const iterator of data) {
@@ -53,13 +54,13 @@ function AssignTask(){
             setTasks(data);
         });
 
-        const levelPromise = doGet("/api/level/all");
+        const levelPromise = CustomRequest.doGet(baseURL + "/api/level/all");
         levelPromise.then( (data) => setLevels(data));
 
-        const topicPromise = doGet("/api/topic/all");
+        const topicPromise = CustomRequest.doGet(baseURL + "/api/topic/all");
         topicPromise.then( (data) => setTopics(data));
 
-        const languagePromise = doGet("/api/exec-module/languages");
+        const languagePromise = CustomRequest.doGet(baseURL + "/api/exec-module/languages");
         languagePromise.then( (data) => {
             let languages = [];
             let map = new Map();
@@ -85,7 +86,8 @@ function AssignTask(){
 
     function handleSearch(event){
         event.preventDefault();
-        const taskPromise = doGet("/api/task/filter?topic_id=" + topicId + "&level_id=" + levelId + "&name=" + taskName);
+        const taskPromise = CustomRequest.doGet(baseURL + 
+            "/api/task/filter?topic_id=" + topicId + "&level_id=" + levelId + "&name=" + taskName);
         taskPromise.then( (data) => setTasks(data));
     }
 
@@ -95,13 +97,15 @@ function AssignTask(){
 
     function handleLevelSelect(event){
         setLevelId(event.target.value);
-        const taskPromise = doGet("/api/task/filter?topic_id=" + topicId + "&level_id=" + event.target.value + "&name=" + taskName);
+        const taskPromise = CustomRequest.doGet(baseURL +
+             "/api/task/filter?topic_id=" + topicId + "&level_id=" + event.target.value + "&name=" + taskName);
         taskPromise.then( (data) => setTasks(data));
     }
 
     function handleTopicSelect(event){
         setTopicId(event.target.value);
-        const taskPromise = doGet("/api/task/filter?topic_id=" + event.target.value + "&level_id=" + levelId + "&name=" + taskName);
+        const taskPromise = CustomRequest.doGet(baseURL + 
+            "/api/task/filter?topic_id=" + event.target.value + "&level_id=" + levelId + "&name=" + taskName);
         taskPromise.then( (data) => setTasks(data));
     }
 
@@ -177,16 +181,21 @@ function AssignTask(){
         xhr.withCredentials = true;
         xhr.send(JSON.stringify(body));
         xhr.onload = function() {
-            if (xhr.status > 399) {
-                console.log(`Error ${xhr.status}: ${xhr.statusText}`);
-            } else {
-                console.log(`Done, got ${xhr.response.length} bytes`);
-                navigate(-2);
-            }
+                if (xhr.status > 399) {
+                    sessionStorage.setItem("status", xhr.status);
+                    sessionStorage.setItem("statusText", xhr.statusText);
+                    sessionStorage.removeItem("error");
+                    navigate("/error");
+                } else {
+                    navigate(-2);
+                }
           };
         xhr.onerror = function() {
-            console.log(`Network connection error`);
-          }; 
+            sessionStorage.removeItem("status");
+            sessionStorage.removeItem("statusText");
+            sessionStorage.setItem("error", "Network connection error");
+            navigate("/error");
+        }; 
 
     }
 
@@ -247,24 +256,6 @@ function AssignTask(){
     const paginate = (pageNumber) => {
         setCurrentPage(pageNumber);
     };
-
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
 
     return(
         <div className="assign-task-container">

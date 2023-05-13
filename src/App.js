@@ -20,6 +20,8 @@ import ViewTask from './components/Pages/ViewTask';
 import StartTask from './components/Pages/StartTask';
 import UserProfile from './components/Pages/UserProfile';
 import AddAdmins from './components/Pages/AddAdmins';
+import Error from './components/Pages/Error';
+
 
 
 function App(){
@@ -32,6 +34,7 @@ function App(){
             <Route path="login" element={<Login />}/>
             <Route path="unauthorized" element={<Unauthorized/>}/>
             <Route path="/" element={<Home/>} />
+            <Route path="/error" element={<Error/>} />
 
             {/* protected routes*/}
             <Route element={<RequireAuth allowedRoles={["ROLE_USER"]} />}>

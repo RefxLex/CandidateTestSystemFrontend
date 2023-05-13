@@ -4,6 +4,7 @@ import logos from "../images/mylogo4.png";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthProvider";
 import "./Header.css";
+import baseURL from "../api/baseUrl";
 
 
 export default function Header(){
@@ -19,7 +20,28 @@ export default function Header(){
         localStorage.removeItem("id");
         localStorage.removeItem("role");
         setAuth({});
-        navigate('/');
+
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
+        fetch(baseURL + resourceURL, {
+            method:"POST",
+            credentials: "include"
+        })
+        .then((response) => {
+            if (!response.ok) {
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
+                throw new Error("Network response was not OK");
+            }
+            setAuth({});
+            navigate('/');
+        })
+        .catch((error) => {
+            sessionStorage.setItem("error", error);
+            console.error("There has been a problem with your fetch operation:", error);
+
+        });
     }
 
     function imgNav(){

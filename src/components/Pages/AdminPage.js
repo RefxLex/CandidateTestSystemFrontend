@@ -15,9 +15,12 @@ import status_large_4 from '/work/web_projects/CandidateTestSystemFrontend/src/i
 import status_all from '/work/web_projects/CandidateTestSystemFrontend/src/images/status_all.png';
 import mail_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/mail-143.png';
 import baseURL from '../../api/baseUrl';
+import CustomRequest from '../../hooks/CustomRequest';
+import ErrorContext from '../../context/ErrorContext';
 
 function AdminPage(){
 
+    const navigate = useNavigate();
     const [status, setStatus] = useState("");
     const [fullName, setFullName] = useState("");
     const [users, setUsers] = useState([]);
@@ -37,6 +40,11 @@ function AdminPage(){
         info: ""
     })
 
+    // get current posts
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = users.slice(indexOfFirstPost, indexOfLastPost);
+
     useEffect( () => {
         let status = search.get("status");
         let fullName = search.get("full_name");
@@ -51,7 +59,8 @@ function AdminPage(){
         }
 
         if( (status!==null) && (fullName!==null)){
-            getUsers("/api/user/filter?status=" + status + "&full_name=" + fullName);
+            const userPromise = CustomRequest.doGet(baseURL + "/api/user/filter?status=" + status + "&full_name=" + fullName);
+            userPromise.then((data) => setUsers(data));
         }
 
     },[])
@@ -67,7 +76,8 @@ function AdminPage(){
         })
     
         setStatus(event.target.value);
-        getUsers("/api/user/filter?status=" + value + "&full_name=" + fullName);
+        const userPromise = CustomRequest.doGet(baseURL + "/api/user/filter?status=" + value + "&full_name=" + fullName);
+        userPromise.then((data) => setUsers(data));
     }
 
     function handleSubmit(event){
@@ -78,30 +88,12 @@ function AdminPage(){
             page: currentPage,
             order: order
         })
-        getUsers("/api/user/filter?status=" + status + "&full_name=" + fullName);
+        const userPromise = CustomRequest.doGet(baseURL + "/api/user/filter?status=" + status + "&full_name=" + fullName);
+        userPromise.then((data) => setUsers(data));
     }
 
     function handleInput(event) {
         setFullName(event.target.value);
-    }
-
-    async function getUsers(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            setUsers(result);
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
     }
 
     function defineTableRowIcon(userStatus){
@@ -159,11 +151,6 @@ function AdminPage(){
         }
     }
 
-    // get current posts
-    const indexOfLastPost = currentPage * postsPerPage;
-    const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const currentPosts = users.slice(indexOfFirstPost, indexOfLastPost);
-
     // Change page
     const paginate = (pageNumber) => {
         setCurrentPage(pageNumber);
@@ -174,8 +161,6 @@ function AdminPage(){
             order: order
         })
     };
-
-    const navigate = useNavigate();
 
     const toUserDetails=(event)=>{
         navigate('/user-details/' + event.target.id);
@@ -200,34 +185,52 @@ function AdminPage(){
     }
 
     function handleSave(){
-        const userPromise = doPost("/api/user/create", profile);
+        const userPromise = CustomRequest.doPostWithBody(baseURL + "/api/user/create", profile);
         userPromise.then( (data) => {
             toggleModal();
             setUsers([...users, data]);
         });
     }
 
-    async function doPost(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
+    function translateToRussian(status){
+        switch (status) {
+            case "started":
+                return "приступил";
+            case "submitted":
+                return "отправил";
+            case "approved":
+                return "принят";
+            case "rejected":
+                return "отклонён";
+        }
+    }
 
+    /*
+    async function doGet(resourceURL){
+        ErrorContext.cleanErrors();
+        try{
+            const response = await fetch (resourceURL, {
+                method:"GET",
+                credentials: "include"
+            })
+            if(response.ok){
+
+            }else if(response.status==401){
+                console.log("status" + response.status)
+                navigate("/login");
+            }else {
+                ErrorContext.setErrorState(response.status, response.statusText);
+                navigate("/error");
+            }
             const result = await response.json();
             return result;
         }
         catch(error){
+            ErrorContext.setNetworkError(error);
             console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
+            navigate("/error");
+        } 
+    } */
 
     return(
         <div>
@@ -392,7 +395,7 @@ function AdminPage(){
                                     >
                                         {user.fullName}
                                     </td>
-                                    <td className='content-table-column'>{user.userStatus}</td>
+                                    <td className='content-table-column'>{translateToRussian(user.userStatus)}</td>
                                     <td className='content-table-column'>{user.lastScore}</td>
                                     <td className='content-table-column'>{user.lastActivity}</td>
                                 </tr>

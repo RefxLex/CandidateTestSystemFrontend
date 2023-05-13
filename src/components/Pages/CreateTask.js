@@ -4,6 +4,7 @@ import "./CreateTask.css";
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/baseUrl";
 import delete_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-delete-20.png';
+import CustomRequest from "../../hooks/CustomRequest";
 
 
 function CreateTask(){
@@ -27,10 +28,10 @@ function CreateTask(){
 
     useEffect (() => {
 
-        const levelPromise = doGet("/api/level/all");
+        const levelPromise = CustomRequest.doGet(baseURL + "/api/level/all");
         levelPromise.then( (data) => setLevels(data));
     
-        const topicPromise = doGet("/api/topic/all");
+        const topicPromise = CustomRequest.doGet(baseURL + "/api/topic/all");
         topicPromise.then( (data) => setTopics(data));
 
     },[])
@@ -45,8 +46,32 @@ function CreateTask(){
             description: newTask.description,
             taskTestInput: newTaskInputArray
         }
-        const taskPromise = doPost("/api/task/create", body);
-        taskPromise.then( (data) => navigate("/tasks"));
+
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
+        fetch(baseURL + "/api/task/create", {
+            method:"POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        })
+        .then((response) => {
+            if (response.ok) {
+                navigate("/tasks");
+            }
+            else{
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
+                navigate("/error");
+            }
+        })
+        .catch((error) => {
+            sessionStorage.setItem("error", error);
+            navigate("/error");
+        });
     }
 
     function handleRemove(event){
@@ -86,46 +111,6 @@ function CreateTask(){
             ...prevObj,
             [name]: value
         }))
-    }
-
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doPost(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
     }
 
     return(

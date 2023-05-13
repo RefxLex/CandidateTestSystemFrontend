@@ -2,6 +2,7 @@ import React, { useState , useEffect } from "react";
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/baseUrl";
 import "./Levels.css";
+import CustomRequest from "../../hooks/CustomRequest";
 import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
 
 function Levels() {
@@ -15,7 +16,7 @@ function Levels() {
 
     
     useEffect( () => {
-        const levelsPromise = doGet("/api/level/all");
+        const levelsPromise = CustomRequest.doGet(baseURL + "/api/level/all");
         levelsPromise.then( (data) => setLevels(data));
     },[])
 
@@ -29,7 +30,7 @@ function Levels() {
         let body = {
             name: newLevel
         }
-        const levelPromise = doPost("/api/level/create", body);
+        const levelPromise = CustomRequest.doPostWithBody(baseURL + "/api/level/create", body);
         levelPromise.then( (data) => setLevels([...levels, data]));
         setInputModal(!inputModal);
     }
@@ -40,7 +41,7 @@ function Levels() {
         let body = {
             name: newLevel
         }
-        const levelPromise = doPut("/api/level/" + level.id, body);
+        const levelPromise = CustomRequest.doPutWithBody(baseURL + "/api/level/" + level.id, body);
         levelPromise.then(() => location.reload());
         setEditMode(false);
         setInputModal(!inputModal);
@@ -75,68 +76,6 @@ function Levels() {
             );
             setLevels(sorted)
             setOrder("ASC");
-        }
-    }
-
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doPost(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doPut(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"PUT",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
         }
     }
 

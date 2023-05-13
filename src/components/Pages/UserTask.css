@@ -186,6 +186,17 @@
     padding-top: 100px;
 }
 
+.user-task-metrics-btn-container {
+    padding: 30px 30px;
+}
+
+.user-task-metrics-btn-container > div {
+    padding-top: 15px;
+}
+
+.user-task-sonar-link {
+    padding: 30px 30px;
+}
 
 
 

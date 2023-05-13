@@ -3,20 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import HeaderWork from '../HeaderWork';
 import baseURL from '../../api/baseUrl';
 import "./UserPage.css";
-import AuthContext from '../../context/AuthProvider';
+import CustomRequest from '../../hooks/CustomRequest';
 import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
 
 function UserPage(){
 
     const navigate = useNavigate();
     const id = localStorage.getItem("id");
-    const { auth } = useContext(AuthContext);
     const [userTasks, setUserTasks] = useState([]);
     const [startModal, setStartModal] = useState(false);
     const [selectedId, setSelectedId] = useState();
 
     useEffect( () => {
-        const userTasksPromise = doGet("/api/user-task/find/" + id);
+        const userTasksPromise = CustomRequest.doGet(baseURL + "/api/user-task/find/" + id);
         userTasksPromise.then( (data) => setUserTasks(data));
     },[])
 
@@ -43,49 +42,32 @@ function UserPage(){
         event.preventDefault();
         let userTask = userTasks.at(selectedId);
         if( ((userTask.startDate) === undefined) || ((userTask.startDate) === null)){
-            const userTaskPromise = doPut("/api/user-task/start/" + userTask.id);
-            userTaskPromise.then( () => navigate("/user/task/start/" + userTask.id));
-        }else{
-            navigate("/user/task/start/" + userTask.id);
-        }
-    }
 
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
+            sessionStorage.removeItem("status");
+            sessionStorage.removeItem("statusText");
+            sessionStorage.removeItem("error");
+            fetch(baseURL + "/api/user-task/start/" + userTask.id, {
+                method:"PUT",
                 credentials: "include"
             })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doPut(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"PUT",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  }
+            .then((response) => {
+                if (response.ok) {
+                    navigate("/user/task/start/" + userTask.id);
+                }
+                else{
+                    sessionStorage.setItem("status", response.status);
+                    sessionStorage.setItem("statusText", response.statusText);
+                    navigate("/error");
+                }
+            })
+            .catch((error) => {
+                sessionStorage.setItem("error", error);
+                navigate("/error");
             });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
 
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
+
+        }else{
+            navigate("/user/task/start/" + userTask.id);
         }
     }
 

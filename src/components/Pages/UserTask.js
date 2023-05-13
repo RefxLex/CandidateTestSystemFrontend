@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./UserTask.css";
+import CustomRequest from "../../hooks/CustomRequest";
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/baseUrl";
+import sonarURL from "../../api/sonarUrl";
 import back_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-back-arrow-30_2.png';
 import slide_up_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-slide-up-50.png';
 import expand_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-more-information-20.png';
@@ -21,7 +23,8 @@ import { languages } from '@codemirror/language-data';
 
 function UserTask() {
 
-    
+    const [progressModal, setProgressModal] = useState(false);
+    const [saved, setSaved] = useState(false);
     const [userTask, setUserTask] = useState({});
     const [user, setUser] = useState({});
     const [viewedBlock, setViewedBlock] = useState("code");
@@ -36,9 +39,7 @@ function UserTask() {
 
     useEffect( () => {
 
-        console.log(location?.state?.from?.pathname);
-
-        const userTaskPromise = doGet("/api/user-task/" + params.userTaskId);
+        const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/" + params.userTaskId);
         userTaskPromise.then((data) => {
             setUserTask(data);
             setCodeLanguage(defineLanguage(data.languageName));
@@ -47,7 +48,7 @@ function UserTask() {
             setCodeDecoded(code);
         });
 
-        const userPromise = doGet("/api/user/by-user-task/" + params.userTaskId);
+        const userPromise = CustomRequest.doGet(baseURL + "/api/user/by-user-task/" + params.userTaskId);
         userPromise.then( (data) => {
             setUser(data);
         })
@@ -110,7 +111,7 @@ function UserTask() {
     }
 
     function handleSave(){
-        const updatePromise = doPut("/api/user-task/" + params.userTaskId, {
+        const updatePromise = CustomRequest.doPostWithBody(baseURL + "/api/user-task/" + params.userTaskId, {
             comment: comment
         })
         updatePromise.then( () => location.reload() );
@@ -118,72 +119,83 @@ function UserTask() {
 
     function handleDelete(event){
         event.preventDefault();
-        const userTaskPromise = doDelete("/api/user-task/" + params.userTaskId);
-        userTaskPromise.then( () => navigate(-1));
+
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
+        fetch(baseURL + "/api/user-task/" + params.userTaskId, {
+            method:"DELETE",
+            credentials: "include"
+        })
+        .then((response) => {
+            if (response.ok) {
+                navigate(-1);
+            }
+            else{
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
+                navigate("/error");
+            }
+        })
+        .catch((error) => {
+            sessionStorage.setItem("error", error);
+            navigate("/error");
+        });
+
     }
 
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
+    function handleSonarAnalysis(){
+        setProgressModal(!progressModal);
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
+        fetch(baseURL + "/api/metrics/run?id=" + params.userTaskId, {
+            method:"PUT",
+            credentials: "include"
+        })
+        .then((response) => {
+            if (response.ok) {
+                setSaved(true);
             }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doPut(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"PUT",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
+            else{
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
+                navigate("/error");
             }
+        })
+        .catch((error) => {
+            sessionStorage.setItem("error", error);
+            navigate("/error");
+        });
 
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doDelete(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"DELETE",
-                credentials: "include"
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
     }
 
     return(
 
         <div className="user-task">
             <HeaderWork/>
+            {/* Progress modal */}
+            {progressModal &&
+                    <div className="modal">
+                        <div className="overlay"></div>
+                        <div className="modal-content">
+                            <div>
+                                {   saved 
+                                        ?<span>Готово</span>
+                                        :<span>Выполнение анализа...</span>
+                                }
+                            </div>
+                            {   saved &&
+                                    <form>
+                                        <div className="start-task-modal-btn-container">
+                                            <button onClick={() => {setProgressModal(!progressModal);location.reload();}}
+                                            className="user-details-accept-button">Ок</button>
+                                        </div>
+                                    </form>
+                            }
+                        </div>
+                    </div>
+            }
             {/* Modal delete user task*/}
             <>
                 {deleteModal &&
@@ -222,6 +234,16 @@ function UserTask() {
                             onChange={handleRadio}
                     />
                     <label className='radio__label' htmlFor='radio_0'>Код решения</label>
+                    <input
+                            className="radio__input" 
+                            type="radio"
+                            name="leftBlock"
+                            id='radio_4'
+                            value="metrics"
+                            checked={viewedBlock==="metrics"}
+                            onChange={handleRadio}
+                    />
+                    <label className='radio__label' htmlFor='radio_4'>Метрики</label>
                     <input 
                             className="radio__input" 
                             type="radio" 
@@ -262,6 +284,23 @@ function UserTask() {
                                 readOnly={true}
                             />
                         </div>
+                }
+                { (viewedBlock==="metrics") &&
+                        <div>
+                            {
+                                userTask.analyzed
+                                    ? <div className="user-task-metrics-btn-container">
+                                        <a href={sonarURL+"/dashboard?id="+userTask.sonarKey} target="_blank" >Анализ в Sonar Qube</a>
+                                      </div>
+                                    : <div className="user-task-metrics-btn-container">
+                                        <span> Анализ кода в Sonar Qube</span>
+                                        <div>
+                                            <button onClick={handleSonarAnalysis} className="user-task-accept-button">Начать</button>
+                                        </div>
+                                      </div>
+                            }
+                        </div>
+
                 }
                 { (viewedBlock==="tests") &&
                     <div>
@@ -376,7 +415,12 @@ function UserTask() {
                                     <p>{userTask.task.description}</p>
                                 </li>
                             </ul>
-                            
+                            <div className="user-task-cancel-btn-container">
+                                <button onClick={() => setDeleteModal(!deleteModal)} className="user-details-cancel-button">
+                                    <img src={reject_icon}></img>
+                                    <span>Отменить задание</span>
+                                </button>
+                            </div>
                         </div>
                 }
                 { (viewedBlock==="comment") &&
@@ -392,12 +436,6 @@ function UserTask() {
                         </div>
                     </>    
                 }
-                <div className="user-task-cancel-btn-container">
-                    <button onClick={() => setDeleteModal(!deleteModal)} className="user-details-cancel-button">
-                        <img src={reject_icon}></img>
-                        <span>Отменить задание</span>
-                    </button>
-                </div>
                 { backToTopButton && (<img  className="to-top" onClick={scrollUp}   src={slide_up_icon} alt="scrollUp"/>)}
             </div>
         </div>

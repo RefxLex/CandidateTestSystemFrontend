@@ -1,15 +1,14 @@
-import { Link } from "react-router-dom";
 import React from "react";
+import "./Missing.css";
 
-const Missing = () => {
+
+function Missing(){
+
     return (
-        <article style={{ padding: "100px" }}>
-            <h1>Oops!</h1>
-            <p>Page Not Found</p>
-            <div className="flexGrow">
-                <Link to="/">Visit Our Homepage</Link>
-            </div>
-        </article>
+        <div className="missing">
+            <h1>Page not found</h1>
+            <a href="/">Visit our home page</a>
+        </div>
     )
 }
 

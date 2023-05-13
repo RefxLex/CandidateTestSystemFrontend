@@ -1,0 +1,11 @@
+.missing {
+    padding: 30px 30px;
+}
+
+.missing p, h1, a {
+    padding: 10px 0px;
+}
+
+.missing-choice {
+    display: grid;
+}

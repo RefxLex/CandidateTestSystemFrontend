@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/baseUrl";
 import "./UserProfile.css";
+import CustomRequest from "../../hooks/CustomRequest";
 
 function UserProfile(){
 
@@ -9,27 +10,9 @@ function UserProfile(){
     const [user, setUser] = useState();
 
     useEffect( () => {
-        const userPromise = doGet("/api/user/" + id);
+        const userPromise = CustomRequest.doGet(baseURL + "/api/user/" + id);
         userPromise.then((data) => setUser(data));
     },[]);
-
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
 
     return(
         <div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./StartTask.css";
 import HeaderWork from "../HeaderWork";
+import CustomRequest from "../../hooks/CustomRequest";
 import baseURL from "../../api/baseUrl";
 import execModuleUrl from "../../api/execModuleUrl";
 import back_icon from "../../images/icons8-back-arrow-30_2.png";
@@ -37,7 +38,7 @@ function StartTask(){
     useEffect( () => {
 
         
-        const userTaskPromise = doGet("/api/user-task/" + params.userTaskId);
+        const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/" + params.userTaskId);
         userTaskPromise.then((data) => {
             setUserTask(data);
             setCodeLanguage(defineLanguage(data.taskCodeLanguageId));
@@ -58,10 +59,45 @@ function StartTask(){
             language_id: userTask.taskCodeLanguageId,
             stdin: input
         }
-        const tokenPromise = createSubmission(execModuleUrl, "/submissions/?base64_encoded=true&wait=false", body);
+
+        //const tokenPromise = createSubmission(execModuleUrl, "/submissions/?base64_encoded=true&wait=false", body);
+        /*
         tokenPromise.then( (data) => {
             subscribeTest(data.token);
+        }) */
+
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
+        fetch(execModuleUrl + "/submissions/?base64_encoded=true&wait=false", {
+            method:"POST",
+            //credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
         })
+        .then((response) => {
+            if (response.ok) {
+                return response.json();
+            }
+            else{
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
+                navigate("/error");
+                //setLogs((prevArr) => [...prevArr, {date: timeStamp, message: "Error: Http status " + response.status,}]);
+            }
+        })
+        .then((result) => {
+            subscribeTest(result.token);
+        })
+        .catch((error) => {
+            sessionStorage.setItem("error", error);
+            //setLogs((prevArr) => [...prevArr, {date: timeStamp, message: error.toString()}]);
+            console.error("There has been a problem with your fetch operation:", error);
+            navigate("/error");
+        });
+
     }
 
     function handleComplete(event){
@@ -72,7 +108,9 @@ function StartTask(){
         let body = {
             code: codeEncoded
         }
-        const tokenPromise = doPut("/api/exec-module/submission/" + params.userTaskId, body);
+
+        /*
+        const tokenPromise = CustomRequest.doPutWithBody(baseURL + "/api/exec-module/submission/" + params.userTaskId, body);
         tokenPromise.then((data) => {
             let requests = [];
             data.map(obj => 
@@ -82,10 +120,72 @@ function StartTask(){
                 });
             Promise.all(requests)
             .then(() => {
-                const savePromise = saveSubmission("/api/exec-module/submission/result/" + params.userTaskId);
+                const savePromise = CustomRequest.doPutEmpty(baseURL + "/api/exec-module/submission/result/" + params.userTaskId);
                 savePromise.then(() => setSaved(true));
             });
+        }) */
+
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
+        fetch(baseURL + "/api/exec-module/submission/" + params.userTaskId, {
+            method:"PUT",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
         })
+        .then((response) => {
+            if (response.ok) {
+                return response.json();
+            }
+            else{
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
+                navigate("/error");
+            }
+        })
+        .then((result) => {
+            let requests = [];
+            result.map(obj => 
+                {
+                    let subPromise = subscribeSave(obj.token);
+                    requests.push(subPromise);
+                });
+            Promise.all(requests)
+            .then(() => {
+
+                sessionStorage.removeItem("status");
+                sessionStorage.removeItem("statusText");
+                sessionStorage.removeItem("error");
+                fetch(baseURL + "/api/exec-module/submission/result/" + params.userTaskId, {
+                    method:"PUT",
+                    credentials: "include"
+                })
+                .then((response) => {
+                    if (response.ok) {
+                        setSaved(true);
+                    }
+                    else{
+                        sessionStorage.setItem("status", response.status);
+                        sessionStorage.setItem("statusText", response.statusText);
+                        navigate("/error");
+                    }
+                })
+                .catch((error) => {
+                    sessionStorage.setItem("error", error);
+                    console.error("There has been a problem with your fetch operation:", error);
+                    navigate("/error");
+                });
+
+            });
+        })
+        .catch((error) => {
+            sessionStorage.setItem("error", error);
+            console.error("There has been a problem with your fetch operation:", error);
+            navigate("/error");
+        });
     }
 
     function handleRadio(event){
@@ -135,140 +235,80 @@ function StartTask(){
         }
     }
 
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doPut(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"PUT",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function saveSubmission(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"PUT",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  }
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
     async function subscribeTest(token) {
-        let response = await fetch(execModuleUrl + "/submissions/" + token,{
-            method:"GET",
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error: ${response.status}`);
-        }
-        const result = await response.json();
-        if(result.status.id < 3) {
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
+        try{
+            let response = await fetch(execModuleUrl + "/submissions/" + token,{
+                method:"GET",
+            });
+            
+            if (!response.ok) {
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
+                throw new Error(`HTTP error: ${response.status}`);
+            }
+            const result = await response.json();
+            if(result.status.id < 3) {
 
-            let timeStamp = getTimeStamp();
-            setLogs((prevArr) => [...prevArr, {date: timeStamp, message: "Status: " + result.status.description,}]);
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            await subscribeTest(token);
-        }else {
-                setLaunchResults((prevArr) => [...prevArr, result]);
                 let timeStamp = getTimeStamp();
                 setLogs((prevArr) => [...prevArr, {date: timeStamp, message: "Status: " + result.status.description,}]);
-                let output = result.compile_output;
-                if((output!==null) && (output!==undefined) && (output!=="")){
-                    setLogs((prevArr) => [...prevArr, {date: timeStamp, message: output,}]);
-                }
-                if((result.stderr!==null) && (result.stderr!==undefined) && (result.stderr!=="")){
-                    setLogs((prevArr) => [...prevArr, {date: timeStamp, message: result.stderr,}]);
-                }
-                if((result.stdout!==null) && (result.stdout!==undefined) && (result.stdout!=="")){
-                    setLogs((prevArr) => [...prevArr, {date: timeStamp, message: result.stdout,}]);
-                }
-                return result;
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                await subscribeTest(token);
+            }else {
+                    setLaunchResults((prevArr) => [...prevArr, result]);
+                    let timeStamp = getTimeStamp();
+                    setLogs((prevArr) => [...prevArr, {date: timeStamp, message: "Status: " + result.status.description,}]);
+                    let output = result.compile_output;
+                    if((output!==null) && (output!==undefined) && (output!=="")){
+                        setLogs((prevArr) => [...prevArr, {date: timeStamp, message: output,}]);
+                    }
+                    if((result.stderr!==null) && (result.stderr!==undefined) && (result.stderr!=="")){
+                        setLogs((prevArr) => [...prevArr, {date: timeStamp, message: result.stderr,}]);
+                    }
+                    if((result.stdout!==null) && (result.stdout!==undefined) && (result.stdout!=="")){
+                        setLogs((prevArr) => [...prevArr, {date: timeStamp, message: result.stdout,}]);
+                    }
+                    return result;
+            }
+        }
+        catch(error){
+            sessionStorage.setItem("error", error);
+            console.error("There has been a problem with your fetch operation:", error);
+            navigate("/error");
         }
     }
 
     async function subscribeSave(token) {
-        let response = await fetch(execModuleUrl + "/submissions/" + token,{
-            method:"GET",
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error: ${response.status}`);
-        }
-        const result = await response.json();
-        if(result.status.id < 3) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            await subscribeSave(token);
-        }else {
-            return result;
-        }
-    }
-      
-    async function createSubmission(serverUrl, resourceURL, body){
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
         try{
-            const response = await fetch (serverUrl + resourceURL, {
-                method:"POST",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
+            let response = await fetch(execModuleUrl + "/submissions/" + token,{
+                method:"GET",
             });
+
             if (!response.ok) {
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
                 throw new Error(`HTTP error: ${response.status}`);
             }
-
             const result = await response.json();
-            return result;
+            if(result.status.id < 3) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                await subscribeSave(token);
+            }else {
+                return result;
+            }
         }
         catch(error){
+            sessionStorage.setItem("error", error);
             console.error("There has been a problem with your fetch operation:", error);
+            navigate("/error");
         }
     }
-
     
-
     return(
 
         <div className="user-task">

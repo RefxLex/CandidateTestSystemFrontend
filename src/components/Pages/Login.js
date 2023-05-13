@@ -4,6 +4,7 @@ import { useContext } from "react";
 import AuthContext from "../../context/AuthProvider";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import baseURL from "../../api/baseUrl";
+import CustomRequest from "../../hooks/CustomRequest";
 import "./Login.css";
 
 function Login(){
@@ -31,24 +32,49 @@ function Login(){
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        let body = {
+            email: email,
+            password: pwd
+        }
 
-        try{
-            const response = await fetch (baseURL + "/api/auth/signin", {
-                method:"POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: pwd
-                })
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
+        //const credentialsPromise = CustomRequest.doPostWithBody(baseURL + "/api/auth/signin", body);
+        /*
+        credentialsPromise.then((data) => {
+            const roles = data.roles;
+            const id = data.id;
+            localStorage.setItem("id", id);
+            localStorage.setItem("role", roles.at(0));
+            setAuth({
+                id: id,
+                roles: [roles.at(0)]
+            })
+            setEmail('');
+            setPwd('');
+            navigate(from, { replace: true });
+        }) */
+
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
+        fetch(baseURL + "/api/auth/signin", {
+            method:"POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        })
+        .then((response) => {
+            if (response.ok) {
+                return response.json();
             }
-            const result = await response.json();
-
+            else{
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
+                navigate("/error");
+            }
+        })
+        .then(result => {
             const roles = result.roles;
             const id = result.id;
             localStorage.setItem("id", id);
@@ -60,10 +86,11 @@ function Login(){
             setEmail('');
             setPwd('');
             navigate(from, { replace: true });
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
+        })
+        .catch((error) => {
+            sessionStorage.setItem("error", error);
+            navigate("/error");
+        });
     }
 
     return(

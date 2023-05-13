@@ -2,6 +2,7 @@ import React, { useState , useEffect } from "react";
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/baseUrl";
 import "./Topics.css";
+import CustomRequest from "../../hooks/CustomRequest";
 import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
 
 function Topics(){
@@ -15,7 +16,7 @@ function Topics(){
 
     
     useEffect( () => {
-        const topicsPromise = doGet("/api/topic/all");
+        const topicsPromise = CustomRequest.doGet(baseURL + "/api/topic/all");
         topicsPromise.then( (data) => setTopics(data));
     },[])
 
@@ -29,7 +30,7 @@ function Topics(){
         let body = {
             name: newTopic
         }
-        const topicPromise = doPost("/api/topic/create", body);
+        const topicPromise = CustomRequest.doPostWithBody(baseURL + "/api/topic/create", body);
         topicPromise.then( (data) => setTopics([...topics, data]));
         setInputModal(!inputModal);
     }
@@ -40,7 +41,7 @@ function Topics(){
         let body = {
             name: newTopic
         }
-        const topicPromise = doPut("/api/topic/" + topic.id, body);
+        const topicPromise = CustomRequest.doPutWithBody(baseURL + "/api/topic/" + topic.id, body);
         topicPromise.then(() => location.reload());
         setEditMode(false);
         setInputModal(!inputModal);
@@ -75,68 +76,6 @@ function Topics(){
             );
             setTopics(sorted)
             setOrder("ASC");
-        }
-    }
-
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doPost(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doPut(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"PUT",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
         }
     }
 

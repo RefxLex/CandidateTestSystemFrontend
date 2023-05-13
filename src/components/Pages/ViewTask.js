@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import HeaderWork from "../HeaderWork";
 import "./ViewTask.css";
 import baseURL from "../../api/baseUrl";
+import CustomRequest from "../../hooks/CustomRequest";
 import slide_up_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-slide-up-50.png';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
@@ -26,7 +27,7 @@ function StartTask(){
 
     useEffect( () => {
 
-        const userTaskPromise = doGet("/api/user-task/" + params.userTaskId);
+        const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/" + params.userTaskId);
         userTaskPromise.then((data) => {
             setUserTask(data);
             setCodeLanguage(defineLanguage(data.taskCodeLanguageId));
@@ -74,24 +75,6 @@ function StartTask(){
             top: 0,
             behavior: "auto"
         })
-    }
-
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
     }
 
     return(

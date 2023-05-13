@@ -3,6 +3,7 @@ import HeaderWork from "../HeaderWork";
 import Pagination from "../Pagination";
 import baseURL from "../../api/baseUrl";
 import "./AddAdmins.css";
+import CustomRequest from "../../hooks/CustomRequest";
 import delete_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-delete-20.png';
 
 function AddAdmins(){
@@ -26,13 +27,13 @@ function AddAdmins(){
     const currentPosts = users.slice(indexOfFirstPost, indexOfLastPost);
 
     useEffect( () => {
-        const userPromise = doGet("/api/user/admins");
+        const userPromise = CustomRequest.doGet(baseURL + "/api/user/admins");
         userPromise.then((data) => setUsers(data));
     },[])
 
     function handleSave(event){
         event.preventDefault();
-        const userPromise = doPost("/api/user/create/admin?role=" + role, profile);
+        const userPromise = CustomRequest.doPostWithBody(baseURL + "/api/user/create/admin?role=" + role, profile);
         userPromise.then( (data) => {
             setModal(!modal);
             setUsers([...users, data]);
@@ -41,7 +42,7 @@ function AddAdmins(){
 
     function handleDelete(event){
         event.preventDefault();
-        const userPromise = doDelete("/api/user/" + selectedId);
+        const userPromise = CustomRequest.doDelete(baseURL + "/api/user/" + selectedId);
         userPromise.then( () => location.reload());
     }
 
@@ -72,64 +73,6 @@ function AddAdmins(){
     const paginate = (pageNumber) => {
         setCurrentPage(pageNumber);
     };
-
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-    
-    async function doPost(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doDelete(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"DELETE",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
 
     return (
         <div>

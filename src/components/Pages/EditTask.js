@@ -2,6 +2,7 @@ import React, { useEffect, useState} from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import baseURL from "../../api/baseUrl";
 import "./EditTask.css";
+import CustomRequest from "../../hooks/CustomRequest";
 import HeaderWork from "../HeaderWork";
 import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
 import delete_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-delete-20.png';
@@ -33,7 +34,7 @@ function EditTask(){
 
     useEffect (() => {
 
-        const taskPromise = doGet("/api/task/" + params.taskId);
+        const taskPromise = CustomRequest.doGet(baseURL + "/api/task/" + params.taskId);
         taskPromise.then( (data) => {
             setNewTask({
                 name: data.name,
@@ -44,10 +45,10 @@ function EditTask(){
             setNewTaskInputArray(data.taskTestInput);
         });
 
-        const levelPromise = doGet("/api/level/all");
+        const levelPromise = CustomRequest.doGet(baseURL + "/api/level/all");
         levelPromise.then( (data) => setLevels(data));
     
-        const topicPromise = doGet("/api/topic/all");
+        const topicPromise = CustomRequest.doGet(baseURL + "/api/topic/all");
         topicPromise.then( (data) => setTopics(data));
 
     },[])
@@ -62,14 +63,65 @@ function EditTask(){
             description: newTask.description,
             taskTestInput: newTaskInputArray
         }
-        const taskPromise = doPut("/api/task/" + params.taskId, body);
-        taskPromise.then( (data) => navigate("/tasks"));
+
+        //const taskPromise = CustomRequest.doPutWithBody(baseURL + "/api/task/" + params.taskId, body);
+        //taskPromise.then( (data) => navigate("/tasks"));
+
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
+        fetch(baseURL + "/api/task/" + params.taskId, {
+            method:"PUT",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        })
+        .then((response) => {
+            if (response.ok) {
+                navigate("/tasks");
+            }
+            else{
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
+                navigate("/error");
+            }
+        })
+        .catch((error) => {
+            sessionStorage.setItem("error", error);
+            navigate("/error");
+        });
     }
 
     function handleDeleteTask(event){
         event.preventDefault();
-        const taskPromise = doSoftDelete("/api/task/delete/" + params.taskId);
-        taskPromise.then( () => navigate("/tasks"));
+
+        //const taskPromise = CustomRequest.doPutEmpty(baseURL + "/api/task/delete/" + params.taskId);
+        //taskPromise.then( () => navigate("/tasks"));
+
+        sessionStorage.removeItem("status");
+        sessionStorage.removeItem("statusText");
+        sessionStorage.removeItem("error");
+        fetch(baseURL + "/api/task/delete/" + params.taskId, {
+            method:"PUT",
+            credentials: "include"
+        })
+        .then((response) => {
+            if (response.ok) {
+                navigate("/tasks");
+            }
+            else{
+                sessionStorage.setItem("status", response.status);
+                sessionStorage.setItem("statusText", response.statusText);
+                navigate("/error");
+            }
+        })
+        .catch((error) => {
+            sessionStorage.setItem("error", error);
+            navigate("/error");
+        });
+        
     }
 
     function handleEdit(event){
@@ -147,64 +199,6 @@ function EditTask(){
             ...prevObj,
             [name]: value
         }))
-    }
-
-    async function doGet(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doPut(resourceURL, body){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"PUT",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                  },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
-    }
-
-    async function doSoftDelete(resourceURL){
-        try{
-            const response = await fetch (baseURL + resourceURL, {
-                method:"PUT",
-                credentials: "include"
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            console.error("There has been a problem with your fetch operation:", error);
-        }
     }
 
     return(
