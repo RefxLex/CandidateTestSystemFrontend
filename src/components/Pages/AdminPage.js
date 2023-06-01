@@ -205,33 +205,6 @@ function AdminPage(){
         }
     }
 
-    /*
-    async function doGet(resourceURL){
-        ErrorContext.cleanErrors();
-        try{
-            const response = await fetch (resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if(response.ok){
-
-            }else if(response.status==401){
-                console.log("status" + response.status)
-                navigate("/login");
-            }else {
-                ErrorContext.setErrorState(response.status, response.statusText);
-                navigate("/error");
-            }
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            ErrorContext.setNetworkError(error);
-            console.error("There has been a problem with your fetch operation:", error);
-            navigate("/error");
-        } 
-    } */
-
     return(
         <div>
             <HeaderWork/>

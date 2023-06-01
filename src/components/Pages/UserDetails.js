@@ -10,7 +10,6 @@ import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/baseUrl";
 import "./UserDetails.css";
 import CustomRequest from "../../hooks/CustomRequest";
-import ErrorContext from "../../context/ErrorContext";
 
 
 function UserDetails(){
@@ -39,8 +38,6 @@ function UserDetails(){
     },[])
 
     function approveUser() {
-        //const userPromise = CustomRequest.doPutEmpty(baseURL + "/api/user/status/" + params.userId + "?status=approved");
-        //userPromise.then( () => navigate("/admin"));
 
         sessionStorage.removeItem("status");
         sessionStorage.removeItem("statusText");
@@ -66,9 +63,6 @@ function UserDetails(){
     }
 
     function rejectUser() {
-
-        //const userPromise = CustomRequest.doPutEmpty("baseURL + /api/user/status/" + params.userId + "?status=rejected");
-        //userPromise.then( () => navigate("/admin"));
 
         sessionStorage.removeItem("status");
         sessionStorage.removeItem("statusText");
@@ -127,8 +121,6 @@ function UserDetails(){
 
     function handleDelete(event){
         event.preventDefault();
-        //const userPromise = CustomRequest.doDelete(baseURL + "/api/user/" + params.userId);
-        //userPromise.then( () => navigate("/admin"));
 
         sessionStorage.removeItem("status");
         sessionStorage.removeItem("statusText");
@@ -160,33 +152,6 @@ function UserDetails(){
         }
         return submiteDate
     }
-
-    /*
-    async function doGet(resourceURL){
-        ErrorContext.cleanErrors();
-        try{
-            const response = await fetch (resourceURL, {
-                method:"GET",
-                credentials: "include"
-            })
-            if(response.ok){
-
-            }else if(response.status==401){
-                console.log("status" + response.status)
-                navigate("/login");
-            }else {
-                ErrorContext.setErrorState(response.status, response.statusText);
-                navigate("/error");
-            }
-            const result = await response.json();
-            return result;
-        }
-        catch(error){
-            ErrorContext.setNetworkError(error);
-            console.error("There has been a problem with your fetch operation:", error);
-            navigate("/error");
-        } 
-    } */
 
     return(
 
@@ -320,8 +285,6 @@ function UserDetails(){
                                     <th>Баллы</th>
                                     <th>Тестов пройдено</th>
                                     <th>Затраченное время</th>
-                                    <th>Время исполнения</th>
-                                    <th>Затраченная память</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -332,15 +295,13 @@ function UserDetails(){
                                                 <img id={userTask.id} src={search_icon} onClick={viewUserTask}  alt="edit" className="user-details-edit-icon"/>
                                             </td>
                                             <td>{userTask.task.name}</td>
-                                            <td>{userTask.languageName}</td>
+                                            <td>{userTask.task.languageName}</td>
                                             <td>{userTask.assignDate.substring(0,10) + " " +  userTask.assignDate.substring(11,19)}</td>
                                             <td>{calcSubmitDate(userTask)}</td>
                                             <td>{ (Math.round((parseInt(userTask.testsPassed)/parseInt(userTask.overallTestsCount))*100))
                                             .toString() + "%" }</td>
                                             <td>{ userTask.testsPassed + "/" + userTask.overallTestsCount }</td>
                                             <td>{userTask.timeSpent}</td>
-                                            <td>{userTask.userTaskResult.at(0)?.time}s</td>
-                                            <td>{userTask.userTaskResult.at(0)?.memory}Kb</td>
                                         </tr>
                                     )
                                 }

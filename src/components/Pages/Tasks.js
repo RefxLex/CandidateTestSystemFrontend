@@ -210,6 +210,7 @@ function Task(){
                                 <th onClick={() => sorting("name")}>Название</th>
                                 <th onClick={() => sorting("topic")}>Раздел</th>
                                 <th onClick={() => sorting("taskDifficulty")}>Сложность</th>
+                                <th onClick={() => sorting("languageName")}>Язык</th>
                                 <th>Описание</th>
                             </tr>
                         </thead>
@@ -226,6 +227,7 @@ function Task(){
                                         <td className="assign-task-table-column">{task.name}</td>
                                         <td className="assign-task-table-column">{task.topic.name}</td>
                                         <td className="assign-task-table-column">{task.taskDifficulty.name}</td>
+                                        <td className="assign-task-table-column">{task.languageName}</td>
                                         <td className="assign-task-table-description">
                                             {   expandDescription 
                                                     ?   <>

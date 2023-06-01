@@ -198,8 +198,19 @@
     padding: 30px 30px;
 }
 
+.user-task-compile-container {
+    padding: 30px 30px;
+}
 
+.user-task-compile-green {
+    padding-bottom: 15px;
+    color: rgb(4, 188, 4);
+}
 
+.user-task-compile-red {
+    padding-bottom: 15px;
+    color: rgb(255, 26, 26);
+}
 
 
 

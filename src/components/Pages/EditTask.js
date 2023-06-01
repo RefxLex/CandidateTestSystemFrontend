@@ -7,29 +7,43 @@ import HeaderWork from "../HeaderWork";
 import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
 import delete_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-delete-20.png';
 import reject_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-20.png';
+import add_new_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-add-new-21.png';
+import remove_icon from "../../images/icons8-minus-20_square.png";
+import lock_icon from "../../images/icons8-lock-20.png";
+import lock_unlocked_icon from "../../images/icons8-open-lock-20.png";
+import CodeMirror from '@uiw/react-codemirror';
+import { javascript } from '@codemirror/lang-javascript';
+import { java } from '@codemirror/lang-java';
+import { cpp } from "@codemirror/lang-cpp";
+import { php } from "@codemirror/lang-php";
+import { python } from "@codemirror/lang-python";
+import { rust } from "@codemirror/lang-rust";
+import { sql } from "@codemirror/lang-sql";
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
+import { languages } from '@codemirror/language-data';
 
 
 function EditTask(){
 
     const params = useParams();
     const navigate = useNavigate();
-    const [inputModal, setInputModal] = useState(false);
-    const [deleteModal, setDeleteModal] = useState(false);
-    const [editMode, setEditMode] = useState(false);
-    const [editId, setEditId] = useState();
+    const [newSrcFileName, setNewSrcFileName] = useState("");
+    const [newTestFileName, setNewTestFileName] = useState("");
+    const [refSolCode, setRefSolCode] = useState("");
+    const [unitTestCode, setUnitTestCode] = useState("");
+    const [activeRefSolId, setActiveRefSolId] = useState(0);
+    const [activeUnitTestId, setActiveUnitTestId] = useState(0);
+    const [languages, setLanguages] = useState([]);
     const [levels, setLevels] = useState([]);
     const [topics, setTopics] = useState([]);
-    const [newTaskInputArray, setNewTaskInputArray] = useState([]);
-    const [taskInput, setTaskInput] = useState({
-        id: "",
-        input: "",
-        output: ""
-    });
+    const [unitTests, setUnitTests] = useState([]);
+    const [refSolution, setRefSolution] = useState([]);
     const [newTask, setNewTask] = useState({
         name: "",
-        topicId: 9,
-        difficultyId: 4,
-        description: ""
+        topicId: 1,
+        difficultyId: 1,
+        description: "",
+        languageName:""
     })
 
     useEffect (() => {
@@ -40,9 +54,27 @@ function EditTask(){
                 name: data.name,
                 topicId: data.topic.id,
                 difficultyId: data.taskDifficulty.id,
-                description: data.description
+                description: data.description,
+                languageName: data.languageName
             })
-            setNewTaskInputArray(data.taskTestInput);
+            for (let i = 0; i < data.refSolution.length; i++) {
+                let src = {
+                    name: i,
+                    code: atob(data.refSolution[i].code),
+                    selected: (i==0) ? true : false
+                }
+                refSolution[i] = src;
+            }
+            for (let j = 0; j < data.unitTest.length; j++) {
+                let unitTest = {
+                    name: j,
+                    code: atob(data.unitTest[j].code),
+                    selected: (j==0) ? true : false
+                }
+                unitTests[j] = unitTest;  
+            }
+            setRefSolCode(atob(data.refSolution.at(0).code));
+            setUnitTestCode(atob(data.unitTest.at(0).code));
         });
 
         const levelPromise = CustomRequest.doGet(baseURL + "/api/level/all");
@@ -51,138 +83,108 @@ function EditTask(){
         const topicPromise = CustomRequest.doGet(baseURL + "/api/topic/all");
         topicPromise.then( (data) => setTopics(data));
 
+        const languagePromise = CustomRequest.doGet(baseURL + "/api/task/languages");
+        languagePromise.then( (data) => setLanguages(data));
+
     },[])
 
     
     function handleAddTask(event){
         event.preventDefault();
-        let body = {
-            name: newTask.name,
-            topicId: newTask.topicId,
-            difficultyId: newTask.difficultyId,
-            description: newTask.description,
-            taskTestInput: newTaskInputArray
-        }
-
-        //const taskPromise = CustomRequest.doPutWithBody(baseURL + "/api/task/" + params.taskId, body);
-        //taskPromise.then( (data) => navigate("/tasks"));
-
-        sessionStorage.removeItem("status");
-        sessionStorage.removeItem("statusText");
-        sessionStorage.removeItem("error");
-        fetch(baseURL + "/api/task/" + params.taskId, {
-            method:"PUT",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
+        // save current editor
+        const saveCurrent = new Promise((resolve, reject) => {
+            let newRefSol = [...refSolution];
+            let newUnitTests = [...unitTests];
+            newRefSol.at(activeRefSolId).code = refSolCode;
+            newUnitTests.at(activeUnitTestId).code = unitTestCode;
+            setRefSolution(newRefSol);
+            setUnitTests(newUnitTests);
+            resolve();
         })
-        .then((response) => {
-            if (response.ok) {
-                navigate("/tasks");
+        saveCurrent.then(()=>{
+            let refSolEncoded = [];
+            let unitTestsEncoded = [];
+            for (let i = 0; i < unitTests.length; i++) {
+                let unitTest = {
+                    code: btoa(unitTests[i].code)
+                }
+                unitTestsEncoded[i] = unitTest;
             }
-            else{
-                sessionStorage.setItem("status", response.status);
-                sessionStorage.setItem("statusText", response.statusText);
+            for (let j = 0; j < refSolution.length; j++) {
+                let src = {
+                    code: btoa(refSolution[j].code)
+                }
+                refSolEncoded[j] = src;
+            }
+
+            let body = {
+                name: newTask.name,
+                topicId: newTask.topicId,
+                difficultyId: newTask.difficultyId,
+                description: newTask.description,
+                languageName: newTask.languageName,
+                unitTest: unitTestsEncoded,
+                refSolution: refSolEncoded,
+            }
+
+            sessionStorage.removeItem("status");
+            sessionStorage.removeItem("statusText");
+            sessionStorage.removeItem("error");
+            fetch(baseURL + "/api/task/" + params.taskId, {
+                method:"PUT",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+            })
+            .then((response) => {
+                if (response.ok) {
+                    navigate("/tasks");
+                }
+                else{
+                    sessionStorage.setItem("status", response.status);
+                    sessionStorage.setItem("statusText", response.statusText);
+                    navigate("/error");
+                }
+            })
+            .catch((error) => {
+                sessionStorage.setItem("error", error);
                 navigate("/error");
-            }
-        })
-        .catch((error) => {
-            sessionStorage.setItem("error", error);
-            navigate("/error");
-        });
-    }
-
-    function handleDeleteTask(event){
-        event.preventDefault();
-
-        //const taskPromise = CustomRequest.doPutEmpty(baseURL + "/api/task/delete/" + params.taskId);
-        //taskPromise.then( () => navigate("/tasks"));
-
-        sessionStorage.removeItem("status");
-        sessionStorage.removeItem("statusText");
-        sessionStorage.removeItem("error");
-        fetch(baseURL + "/api/task/delete/" + params.taskId, {
-            method:"PUT",
-            credentials: "include"
-        })
-        .then((response) => {
-            if (response.ok) {
-                navigate("/tasks");
-            }
-            else{
-                sessionStorage.setItem("status", response.status);
-                sessionStorage.setItem("statusText", response.statusText);
-                navigate("/error");
-            }
-        })
-        .catch((error) => {
-            sessionStorage.setItem("error", error);
-            navigate("/error");
-        });
-        
-    }
-
-    function handleEdit(event){
-        const { id, value } = event.target;
-        let testInput = newTaskInputArray.at(id);
-        setEditId(id);
-        setEditMode(true);
-        setInputModal(!inputModal);
-        setTaskInput({
-            id: testInput.id,
-            input: testInput.input,
-            output: testInput.output
-        });
-    }
-
-    
-    function handleRemove(event){
-        const { id, value } = event.target;
-        let newArray = [];
-        for(let i=0; i<newTaskInputArray.length; i++){
-            if(i != id){
-               newArray.push(newTaskInputArray[i]);
-            }
-        }
-        setNewTaskInputArray(newArray);
-    }
-
-    function handleTestDataArray(event){
-        if( (taskInput.input!=="") && (taskInput.output!=="") )
-        {
-            setNewTaskInputArray( (prevArr) => [...prevArr, taskInput]);
-            setTaskInput({
-                id:"",
-                input: "",
-                output: ""
             });
-        }
-        setInputModal(!inputModal);
+        })
     }
 
-    function handleTestInputEdit(event){
-        if( (taskInput.input!=="") && (taskInput.output!=="") )
-        {
-            let array = [...newTaskInputArray];
-            array.at(editId).input = taskInput.input;
-            array.at(editId).output = taskInput.output;
-            setNewTaskInputArray(array);
-            setTaskInput({
-                id:"",
-                input: "",
-                output: ""
-            });
+    function addNewRefSol(){
+        setNewSrcFileName("");
+        let newSrc = {
+            name: newSrcFileName,
+            code:"",
+            selected: false
         }
-        setEditMode(false);
-        setInputModal(!inputModal);
+        setRefSolution((prevArr) => [...prevArr, newSrc]);
     }
 
-    function handleCancel(event){
-        event.preventDefault()
-        setEditMode(false);
-        setInputModal(!inputModal);
+    function addNewUnitTest(){
+        setNewTestFileName("");
+        let newUnitTest = {
+            name: newTestFileName,
+            code:"",
+            selected: false
+        }
+        setUnitTests((prevArr) => [...prevArr, newUnitTest]);
+    }
+
+    function removeRefSol(){
+        let newRefSol = [...refSolution];
+        newRefSol.splice(activeRefSolId, 1);
+        setRefSolution(newRefSol);
+    }
+
+    function removeUnitTest(){
+        let newUnitTests = [...unitTests];
+        newUnitTests.splice(activeUnitTestId, 1);
+        setUnitTests(newUnitTests);
     }
 
     function onTaskChange(event){
@@ -193,84 +195,70 @@ function EditTask(){
         }))
     }
 
-    function onTaskInputChange(event){
-        const { value, name } = event.target;
-        setTaskInput( (prevObj) => ({
-            ...prevObj,
-            [name]: value
-        }))
+    function activeRefSol(event){
+        const { id } = event.target;
+        // save previous
+        let newRefSol = [...refSolution];
+        newRefSol.at(activeRefSolId).code = refSolCode;
+        newRefSol.at(activeRefSolId).selected = false;
+        newRefSol.at(id).selected = true;
+        setRefSolution(newRefSol);
+
+        setActiveRefSolId(id);
+        let solution = refSolution.at(id);
+        setRefSolCode(solution.code);
+    }
+
+    function activeUnitTest(event){
+        const { id } = event.target;
+        // save previous
+        let newUnitTests = [...unitTests];
+        newUnitTests.at(activeUnitTestId).code = unitTestCode;
+        newUnitTests.at(activeUnitTestId).selected = false;
+        newUnitTests.at(id).selected = true;
+        setUnitTests(newUnitTests);
+
+        setActiveUnitTestId(id);
+        let unitTest = unitTests.at(id);
+        setUnitTestCode(unitTest.code);
+    }
+
+    const onRefSolChange = React.useCallback((value, viewUpdate) => {
+        setRefSolCode(value);
+    }, []);
+
+    const onUnitTestChange = React.useCallback((value, viewUpdate) => {
+        setUnitTestCode(value);
+    }, []);
+
+    function defineLanguage(languageName){
+        switch (languageName) {
+            case "Java":
+                return ([java()])
+            case "JavaScript":
+                return ([javascript()])
+            case "C++":
+                return ([cpp()])
+            case "C":
+                return ([cpp()])
+            case "C#":
+                return ([cpp()])
+            case "PHP":
+                return ([php()])
+            case "Python":
+                return ([python()])
+            case "Rust":
+                return ([rust()])
+            case "SQL":
+                return ([sql()])            
+            default:
+                return ([markdown({ base: markdownLanguage, codeLanguages: languages })])
+        }
     }
 
     return(
         <>
             <HeaderWork/>
-            {/* Modal delete task*/}
-            <>
-                {deleteModal &&
-                    <div className="modal">
-                        <div className="overlay"></div>
-                        <div className="modal-content">
-                            <div>
-                                <span>Вы точно хотите удалить задание?</span>
-                            </div>
-                            <form>
-                                <div className="modal-btn-container">
-                                    <button onClick={() => setDeleteModal(!deleteModal)} className="user-details-accept-button">Нет</button>
-                                    <button onClick={handleDeleteTask} className="user-details-cancel-button">Да</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                }
-            </>
-            {/* Add Test Input Modal */}
-            {   inputModal && 
-                            <>
-                                 <div className="modal">
-                                    <div className="overlay"></div>
-                                    <div className="modal-content">
-                                        <div className="task-modal-content-label">
-                                        {
-                                            editMode
-                                                ? <span>Изменить тест</span>
-                                                : <span>Новый тест</span>
-                                        }
-                                        </div>
-                                        <div>
-                                            <label htmlFor="taskInput">Входные данные:</label>
-                                        </div>
-                                        <div>
-                                                <textarea
-                                                    id="taskInput"
-                                                    className="task-modal-input"
-                                                    name="input"
-                                                    onChange={onTaskInputChange}
-                                                    value={taskInput.input}
-                                                />
-                                        </div>
-                                        <div>
-                                            <label htmlFor="description">Выходные данные:</label>
-                                        </div>
-                                        <div>
-                                                <textarea
-                                                    id="taskOutput"
-                                                    className="task-modal-input"
-                                                    name="output"
-                                                    onChange={onTaskInputChange}
-                                                    value={taskInput.output}
-                                                />
-                                        </div>
-                                        <div className="modal-btn-container">
-                                            <button onClick={handleCancel} className="user-details-cancel-button">Отмена</button>
-                                            { editMode
-                                                ? <button onClick={handleTestInputEdit} className="user-details-accept-button">Сохранить</button>
-                                                : <button onClick={handleTestDataArray} className="user-details-accept-button">Добавить</button>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-            }
             {/* Main content */}
             <div className="create-task">
                 <form onSubmit={ (e) => e.preventDefault()}>
@@ -316,6 +304,21 @@ function EditTask(){
                         }
                         </select>
                     </div>
+                    <div className="assign-task-label-language">
+                        <label htmlFor="languageName">Язык</label>
+                        <select className="assign-task-select"
+                            id="languageName"
+                            value={newTask.languageName}
+                            onChange={onTaskChange}
+                            name="languageName"
+                        >
+                            {
+                                languages.map( (language, rowId) =>
+                                    <option key={rowId} value={language}>{language}</option>
+                                )
+                            }   
+                        </select>
+                    </div>
                     <div>
                         <label htmlFor="description">Описание:</label>
                     </div>
@@ -329,46 +332,79 @@ function EditTask(){
                         />
                     </div>
                 </form>
-                <button onClick={() => setInputModal(!inputModal)} className="user-details-cancel-button">Добавить тест </button>
-                <table className="assign-task-table">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Номер</th>
-                            <th>Вход</th>
-                            <th>Выход</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div className="create-task-ref-sol-container">
+                    <div className="create-task-ref-sol-label-container">
+                        <span>Решение</span>
+                        <img className="create-task-icon" src={add_new_icon} onClick={addNewRefSol}></img>
+                        <img className="create-task-icon" src={remove_icon} onClick={removeRefSol}/>
+                        <input
+                            id="taskInput"
+                            className="start-task-modal-input"
+                            name="input"
+                            onChange={()=>setNewSrcFileName(event.target.value)}
+                            value={newSrcFileName}
+                        />
+                    </div>
+                    <div className="create-task-file-panel">
                         {
-                            newTaskInputArray.map( (item, rowId) =>
-                                <tr key={rowId}>
-                                        <td>
-                                            <div className="task-task-item-btns">
-                                                <img onClick={handleEdit} id={rowId} src={edit_icon} alt="edit" className="user-details-edit-icon"/>
-                                                <img onClick={handleRemove} id={rowId} src={delete_icon} alt="edit" className="user-details-edit-icon"/>
-                                            </div>
-                                        </td>
-                                      <td className="assign-task-table-column">{rowId}</td>
-                                      <td className="assign-task-table-column">{item.input}</td>
-                                      <td className="assign-task-table-column">{item.output}</td>
-                                </tr>
+                            refSolution.map((sol, id)=>
+                                <span className={ (refSolution.at(id).selected) 
+                                    ? "create-task-ref-sol-list-highlight" 
+                                    : "create-task-ref-sol-list" }
+                                    id={id} onClick={activeRefSol}>{sol.name}
+                                </span>
                             )
                         }
-                    </tbody>
-                </table>
-                <div className="edit-task-btn-container">
-                    <button onClick={() => setDeleteModal(!deleteModal)} className="user-details-cancel-button">
-                        <img src={reject_icon}></img>
-                        <span>Удалить задание</span>
-                    </button>
-                    <div>
-                        <button onClick={handleAddTask} className="user-details-accept-button">Сохранить</button>
                     </div>
+                    <div className="create-task-code-container">
+                        <CodeMirror
+                            value={refSolCode}
+                            extensions={defineLanguage(newTask.languageName)}
+                            theme="light"
+                            onChange={onRefSolChange}
+                        />
+                    </div>
+                </div>
+                <div className="create-task-ref-sol-container">
+                    <div className="create-task-ref-sol-label-container">
+                        <span>Тесты</span>
+                        <img className="create-task-icon" src={add_new_icon} onClick={addNewUnitTest}/>
+                        <img className="create-task-icon" src={remove_icon} onClick={removeUnitTest}/>
+                        <input
+                            id="taskInput"
+                            className="start-task-modal-input"
+                            name="input"
+                            onChange={()=>setNewTestFileName(event.target.value)}
+                            value={newTestFileName}
+                        />
+                    </div>
+                    <div className="create-task-file-panel">
+                        {
+                            unitTests.map((test, id)=>
+                                <span className={ (unitTests.at(id).selected) 
+                                    ? "create-task-ref-sol-list-highlight" 
+                                    : "create-task-ref-sol-list" }
+                                    id={id} onClick={activeUnitTest}>{test.name}
+                                </span>
+                            )
+                        }
+                    </div>
+                    <div className="create-task-code-container">
+                        <CodeMirror
+                            value={unitTestCode}
+                            extensions={defineLanguage(newTask.languageName)}
+                            theme="light"
+                            onChange={onUnitTestChange}
+                        />
+                    </div>
+                </div>         
+                <div className="modal-btn-container">
+                    <button onClick={handleAddTask} className="user-details-accept-button">Сохранить</button>
                 </div>
             </div>
         </>
     )
+    
 }
 
 export default EditTask;

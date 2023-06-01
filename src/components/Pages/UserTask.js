@@ -21,6 +21,7 @@ import { sql } from "@codemirror/lang-sql";
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 
+
 function UserTask() {
 
     const [progressModal, setProgressModal] = useState(false);
@@ -28,12 +29,12 @@ function UserTask() {
     const [userTask, setUserTask] = useState({});
     const [user, setUser] = useState({});
     const [viewedBlock, setViewedBlock] = useState("code");
-    const [codeLanguage, setCodeLanguage] = useState([]);
     const [backToTopButton, setBackToTopButton] = useState(false);
     const [modal, setModal] = useState(false);
     const [comment, setComment] = useState("");
-    const [codeDecoded, setCodeDecoded] = useState("");
+    const [solution, setSolution] = useState([]);
     const [deleteModal, setDeleteModal] = useState(false);
+    const [testReport, setTestReport] = useState([]);
     const navigate = useNavigate();
     let params = useParams();
 
@@ -42,10 +43,9 @@ function UserTask() {
         const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/" + params.userTaskId);
         userTaskPromise.then((data) => {
             setUserTask(data);
-            setCodeLanguage(defineLanguage(data.languageName));
-            //let code = Buffer.from(data.code,'base64')
-            let code = atob(data.code);
-            setCodeDecoded(code);
+            setSolution(data.userTaskSolution);
+            parseCompileResult(atob(data.resultReport));
+            //console.log(data);
         });
 
         const userPromise = CustomRequest.doGet(baseURL + "/api/user/by-user-task/" + params.userTaskId);
@@ -170,6 +170,42 @@ function UserTask() {
 
     }
 
+    
+    function parseCompileResult(result){
+        let lineIndex = 0;
+        let text = result;
+        let endLineSubstr="";
+        let endLine = 0;
+        let line = "";
+        let lineArray = [];
+        while(lineIndex != -1){
+            lineIndex = text.indexOf("~");
+            if(lineIndex != -1) {
+                endLineSubstr = text.substring(lineIndex+1,text.lenght);
+                //console.log("endLineSubstr" + "\n" + endLineSubstr);
+                endLine = endLineSubstr.indexOf("~");
+                //console.log("endLine" + endLine);
+                if(endLine != -1){
+                    line = text.substring(lineIndex, endLine);
+                    line = '\n' + line;
+                    console.log("line" + line);
+                    lineArray.push(line);
+                    text = text.substring(endLine+1, text.lenght);
+                    //console.log("text" + "\n" + text);
+                }
+                else{
+                    line = text.substring(lineIndex, text.lenght);
+                    line = '\n' + line;
+                    console.log("line" + line);
+                    text = "";
+                    lineArray.push(line);
+                }
+            }
+        }
+        setTestReport(lineArray);
+    }
+    
+
     return(
 
         <div className="user-task">
@@ -238,12 +274,12 @@ function UserTask() {
                             className="radio__input" 
                             type="radio"
                             name="leftBlock"
-                            id='radio_4'
-                            value="metrics"
-                            checked={viewedBlock==="metrics"}
+                            id='radio_5'
+                            value="refSol"
+                            checked={viewedBlock==="refSol"}
                             onChange={handleRadio}
                     />
-                    <label className='radio__label' htmlFor='radio_4'>Метрики</label>
+                    <label className='radio__label' htmlFor='radio_5'>Образец</label>
                     <input 
                             className="radio__input" 
                             type="radio" 
@@ -254,6 +290,16 @@ function UserTask() {
                             onChange={handleRadio}
                     />
                     <label className='radio__label' htmlFor='radio_1'>Тесты</label>
+                    <input 
+                            className="radio__input" 
+                            type="radio" 
+                            name="leftBlock"
+                            id='radio_6'
+                            value="compile"
+                            checked={viewedBlock==="compile"}
+                            onChange={handleRadio}
+                    />
+                    <label className='radio__label' htmlFor='radio_6'>Компиляция</label>
                     <input 
                             className="radio__input" 
                             type="radio" 
@@ -274,122 +320,67 @@ function UserTask() {
                             onChange={handleRadio}
                     />
                     <label className='radio__label' htmlFor='radio_3'>Комментарий</label>
+                    <input
+                            className="radio__input" 
+                            type="radio"
+                            name="leftBlock"
+                            id='radio_4'
+                            value="metrics"
+                            checked={viewedBlock==="metrics"}
+                            onChange={handleRadio}
+                    />
+                    <label className='radio__label' htmlFor='radio_4'>Метрики</label>
                 </div>
                 { (viewedBlock==="code") &&
-                        <div className="user-details-code-container">
+
+                        solution.map((sol, id) =>
+                            <div key={id} className="user-details-code-container">
+                                <CodeMirror
+                                    value={atob(sol.code)}
+                                    extensions={defineLanguage(userTask.task.languageName)}
+                                    theme="light"
+                                    readOnly={true}
+                                />
+                            </div>
+                        )
+                }
+                { (viewedBlock==="refSol") &&
+
+                        userTask.task.refSolution.map((sol, id) =>
+                            <div key={id} className="user-details-code-container">
+                                <CodeMirror
+                                    value={atob(sol.code)}
+                                    extensions={defineLanguage(userTask.task.languageName)}
+                                    theme="light"
+                                    readOnly={true}
+                                />
+                            </div>
+                        )
+                }
+                { (viewedBlock==="tests") &&
+
+                        userTask.task.unitTest.map((sol, id) =>
+                        <div key={id} className="user-details-code-container">
                             <CodeMirror
-                                value={codeDecoded}
-                                extensions={codeLanguage}
+                                value={atob(sol.code)}
+                                extensions={defineLanguage(userTask.task.languageName)}
                                 theme="light"
                                 readOnly={true}
                             />
                         </div>
+                    )
                 }
-                { (viewedBlock==="metrics") &&
+                {
+                    (viewedBlock==="compile") &&
+                    <div className="user-task-compile-container">
+                        <div className={
+                            userTask.compilationResult==="OK" ? "user-task-compile-green" : "user-task-compile-red"
+                        }>{userTask.compilationResult}</div>
                         <div>
                             {
-                                userTask.analyzed
-                                    ? <div className="user-task-metrics-btn-container">
-                                        <a href={sonarURL+"/dashboard?id="+userTask.sonarKey} target="_blank" >Анализ в Sonar Qube</a>
-                                      </div>
-                                    : <div className="user-task-metrics-btn-container">
-                                        <span> Анализ кода в Sonar Qube</span>
-                                        <div>
-                                            <button onClick={handleSonarAnalysis} className="user-task-accept-button">Начать</button>
-                                        </div>
-                                      </div>
-                            }
-                        </div>
-
-                }
-                { (viewedBlock==="tests") &&
-                    <div>
-                        {/* Modal view additional info*/}
-                        {<>  
-                            {modal &&
-                                <div className="modal">
-                                    <div className="overlay"></div>
-                                    <div className="solution-modal">
-                                        <div className="solution-modal-close-icon-container">
-                                            <img className="solution-modal-close-icon" src={close_icon} alt="close" onClick={expand}/>
-                                        </div>
-                                        <table className="user-details-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Номер</th>
-                                                    <th>created_at</th>
-                                                    <th>exit_signal</th>
-                                                    <th>finished_at</th>
-                                                    <th>submissionToken</th>
-                                                    <th>wall_time</th>
-                                                    <th>stderr</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {
-                                                    userTask.userTaskResult.map( (result, blockId) =>
-                                                        <tr key={blockId}>
-                                                            <td>{blockId}</td>
-                                                            <td>{result.created_at}</td>
-                                                            <td>{result.exit_signal}</td>
-                                                            <td>{result.finished_at}</td>
-                                                            <td>{result.submissionToken}</td>
-                                                            <td>{result.wall_time}</td>
-                                                            <td>{result.stderr}</td>
-                                                        </tr>
-                                                    )
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            }   
-                        </>}
-                        <div className="user-task-tests-header">
-                            <span className="user-task-tests-passed">Успешно: {userTask.testsPassed}</span>
-                            <span className="user-task-tests-failed">Провалено: {userTask.testsFailed}</span>
-                        </div>
-
-                        <div className="user-task-tests-container">
-                            {
-                                <table className="user-details-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Номер</th>
-                                            <th>Статус</th>
-                                            <th>Время исполнения(s)</th>
-                                            <th>Память(Kb)</th>
-                                            <th>Входные данные</th>
-                                            <th>Ожидаемый результат</th>
-                                            <th>Выходные данные</th>
-                                            <th>Exit code</th>
-                                            <th>Результат компиляции</th>
-                                            <th> 
-                                                <button className="user-task-expand-button" onClick={expand}>
-                                                    <img src={expand_icon} alt="expand" />
-                                                </button>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {
-                                            userTask.userTaskResult.map( (result, blockId) =>
-                                                <tr key={blockId}>
-                                                    <td>{blockId}</td>
-                                                    <td>{result.status}</td>
-                                                    <td>{result.time}</td>
-                                                    <td>{result.memory}</td>
-                                                    <td>{result.testInput}</td>
-                                                    <td>{result.expectedOutput}</td>
-                                                    <td>{result.stdout}</td>
-                                                    <td>{result.exit_code}</td>
-                                                    <td>{result.compile_output}</td>
-                                                    <td> </td>
-                                                </tr>
-                                            )
-                                        }
-                                    </tbody>
-                                </table>
+                                testReport.map( (line, id) =>
+                                    <div key={id}>{line}</div>
+                                )
                             }
                         </div>
                     </div>
@@ -408,7 +399,7 @@ function UserTask() {
                                 </li>
                                 <li>
                                     <label>Язык:</label>
-                                    <span>{userTask.languageName}</span>
+                                    <span>{userTask.task.languageName}</span>
                                 </li>
                                 <li>
                                     <label>Описание:</label>
@@ -435,6 +426,23 @@ function UserTask() {
                             <button onClick={handleSave} className="user-task-accept-button">Сохранить</button>
                         </div>
                     </>    
+                }
+                { (viewedBlock==="metrics") &&
+                        <div>
+                            {
+                                userTask.analyzed
+                                    ? <div className="user-task-metrics-btn-container">
+                                        <a href={sonarURL+"/dashboard?id="+userTask.sonarKey} target="_blank" >Анализ в Sonar Qube</a>
+                                      </div>
+                                    : <div className="user-task-metrics-btn-container">
+                                        <span> Анализ кода в Sonar Qube</span>
+                                        <div>
+                                            <button onClick={handleSonarAnalysis} className="user-task-accept-button">Начать</button>
+                                        </div>
+                                      </div>
+                            }
+                        </div>
+
                 }
                 { backToTopButton && (<img  className="to-top" onClick={scrollUp}   src={slide_up_icon} alt="scrollUp"/>)}
             </div>

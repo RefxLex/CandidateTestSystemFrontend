@@ -110,8 +110,6 @@ function UserPage(){
                                 <th>Отправлено</th>
                                 <th>Баллы</th>
                                 <th>Затраченное время</th>
-                                <th>Время исполнения</th>
-                                <th>Затраченная память</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -123,7 +121,7 @@ function UserPage(){
                                             src={search_icon} alt="view" className="user-details-edit-icon"/>
                                         </td>
                                         <td>{userTask.task.name}</td>
-                                        <td>{userTask.languageName}</td>
+                                        <td>{userTask.task.languageName}</td>
                                         <td>{userTask.assignDate.substring(0,10) + " " +  userTask.assignDate.substring(11,19)}</td>
                                         <td>
                                             { (userTask.completed)
@@ -135,8 +133,6 @@ function UserPage(){
                                         <td>{ (Math.round((parseInt(userTask.testsPassed)/parseInt(userTask.overallTestsCount))*100))
                                         .toString() + "%" }</td>
                                         <td>{userTask.timeSpent}</td>
-                                        <td>{userTask.userTaskResult.at(0)?.time}s</td>
-                                        <td>{userTask.userTaskResult.at(0)?.memory}Kb</td>
                                     </tr>
                                 )
                             }

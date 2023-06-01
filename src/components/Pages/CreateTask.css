@@ -1,3 +1,39 @@
 .create-task {
     padding: 30px 30px;
 }
+
+.create-task-ref-sol-container {
+    padding-top: 15px;
+}
+
+.create-task-lock-icon {
+    padding-bottom: 5px;
+}
+
+.create-task-icon {
+    padding-left: 15px;
+    cursor: pointer;
+}
+
+.create-task-ref-sol-label-container {
+    display: flex;
+    align-items: center;
+}
+
+.create-task-ref-sol-list {
+    padding-bottom: 7px;
+}
+
+.create-task-ref-sol-list-highlight {
+    padding-bottom: 7px;
+    background-color: #d8d8d866;
+}
+
+.create-task-file-panel {
+    padding: 15px 15px 15px 0px;
+}
+
+.create-task-file-panel > span {
+    padding: 5px 15px 5px 15px;
+    cursor: pointer;
+}

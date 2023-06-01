@@ -21,6 +21,7 @@ module.exports = {
     compress: true,
     historyApiFallback: true,
   },
+  devtool: 'inline-source-map',
   module: {
     rules: [
       {

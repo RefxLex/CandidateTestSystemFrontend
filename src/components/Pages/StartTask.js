@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./StartTask.css";
-import HeaderWork from "../HeaderWork";
 import CustomRequest from "../../hooks/CustomRequest";
 import baseURL from "../../api/baseUrl";
 import execModuleUrl from "../../api/execModuleUrl";
 import back_icon from "../../images/icons8-back-arrow-30_2.png";
 import launch_icon from '../../images/icons8-play-20.png';
+import add_new_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-add-new-21.png';
+import remove_icon from "../../images/icons8-minus-20_square.png";
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { java } from '@codemirror/lang-java';
@@ -20,84 +21,95 @@ import { languages } from '@codemirror/language-data';
 
 function StartTask(){
 
+    const [newSrcFileName, setNewSrcFileName] = useState("");
+    const [newTestFileName, setNewTestFileName] = useState("");
+    const [sourceCode, setSourceCode] = useState("");
+    const [unitTestCode, setUnitTestCode] = useState("");
+    const [activeSourceId, setActiveSourceId] = useState(0);
+    const [activeUnitTestId, setActiveUnitTestId] = useState(0);
     const [userTask, setUserTask] = useState({});
-    const [launchResults, setLaunchResults] = useState([]);
     const [viewedBlock, setViewedBlock] = useState("instructions");
     const [completeModal, setCompleteModal] = useState(false);
     const [saveModal, setSaveModal] = useState(false);
     const [saved, setSaved] = useState(false);
-    const [lowerPanel, setLowerPanel] = useState("log");
-    const [codeLanguage, setCodeLanguage] = useState([]);
-    const [code, setCode] = useState("");
-    const [testInput, setTestInput] = useState("");
-    const [logs, setLogs] = useState([]);
-    const [token, setToken] = useState("");
+    const [solution, setSolution] = useState([]);
+    const [unitTests, setUnitTests] = useState([]);
+    const [logs, setLogs] = useState({
+        result:""
+    });
     const navigate = useNavigate();
     let params = useParams();
 
     useEffect( () => {
 
-        
         const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/" + params.userTaskId);
         userTaskPromise.then((data) => {
             setUserTask(data);
-            setCodeLanguage(defineLanguage(data.taskCodeLanguageId));
         });
 
     },[])
 
     function handleLaunch(){
-        let timeStamp = getTimeStamp();
-        setLogs((prevArr) => [...prevArr, {date: timeStamp, message: "Loading...",}]);
-        let codeEncoded = btoa(code);
-        let input = null;
-        if(testInput!==""){
-            input = btoa(testInput);
-        }
-        let body = {
-            source_code: codeEncoded,
-            language_id: userTask.taskCodeLanguageId,
-            stdin: input
-        }
 
-        //const tokenPromise = createSubmission(execModuleUrl, "/submissions/?base64_encoded=true&wait=false", body);
-        /*
-        tokenPromise.then( (data) => {
-            subscribeTest(data.token);
-        }) */
-
-        sessionStorage.removeItem("status");
-        sessionStorage.removeItem("statusText");
-        sessionStorage.removeItem("error");
-        fetch(execModuleUrl + "/submissions/?base64_encoded=true&wait=false", {
-            method:"POST",
-            //credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
+        // save current editor
+        const saveCurrent = new Promise((resolve, reject) => {
+            let newSolution = [...solution];
+            let newUnitTests = [...unitTests];
+            newSolution.at(activeSourceId).code = sourceCode;
+            newUnitTests.at(activeUnitTestId).code = unitTestCode;
+            setSolution(newSolution);
+            setUnitTests(newUnitTests);
+            resolve();
         })
-        .then((response) => {
-            if (response.ok) {
-                return response.json();
+        saveCurrent.then(()=>{
+
+            let solEncoded = [];
+            let unitTestsEncoded = [];
+            for (let i = 0; i < unitTests.length; i++) {
+                let unitTest = {
+                    code: btoa(unitTests[i].code)
+                }
+                unitTestsEncoded[i] = unitTest;
             }
-            else{
-                sessionStorage.setItem("status", response.status);
-                sessionStorage.setItem("statusText", response.statusText);
+            for (let j = 0; j < solution.length; j++) {
+                let src = {
+                    code: btoa(solution[j].code)
+                }
+                solEncoded[j] = src;
+            }
+
+            let body = {
+                solution: solEncoded,
+                unitTest: unitTestsEncoded,
+            }
+
+            sessionStorage.removeItem("status");
+            sessionStorage.removeItem("statusText");
+            sessionStorage.removeItem("error");
+            fetch(baseURL + "/api/user-task/test-launch", {
+                method:"POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+            })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+                else{
+                    sessionStorage.setItem("status", response.status);
+                    sessionStorage.setItem("statusText", response.statusText);
+                    navigate("/error");
+                }
+            })
+            .then((data)=>setLogs(data))
+            .catch((error) => {
+                sessionStorage.setItem("error", error);
                 navigate("/error");
-                //setLogs((prevArr) => [...prevArr, {date: timeStamp, message: "Error: Http status " + response.status,}]);
-            }
-        })
-        .then((result) => {
-            subscribeTest(result.token);
-        })
-        .catch((error) => {
-            sessionStorage.setItem("error", error);
-            //setLogs((prevArr) => [...prevArr, {date: timeStamp, message: error.toString()}]);
-            console.error("There has been a problem with your fetch operation:", error);
-            navigate("/error");
+            });
         });
-
     }
 
     function handleComplete(event){
@@ -108,22 +120,6 @@ function StartTask(){
         let body = {
             code: codeEncoded
         }
-
-        /*
-        const tokenPromise = CustomRequest.doPutWithBody(baseURL + "/api/exec-module/submission/" + params.userTaskId, body);
-        tokenPromise.then((data) => {
-            let requests = [];
-            data.map(obj => 
-                {
-                    let subPromise = subscribeSave(obj.token);
-                    requests.push(subPromise);
-                });
-            Promise.all(requests)
-            .then(() => {
-                const savePromise = CustomRequest.doPutEmpty(baseURL + "/api/exec-module/submission/result/" + params.userTaskId);
-                savePromise.then(() => setSaved(true));
-            });
-        }) */
 
         sessionStorage.removeItem("status");
         sessionStorage.removeItem("statusText");
@@ -192,123 +188,99 @@ function StartTask(){
         setViewedBlock(event.target.value);
     }
 
-    function lowerPanelRadio(event){
-        setLowerPanel(event.target.value);
+    function defineLanguage(languageName){
+        switch (languageName) {
+            case "Java":
+                return ([java()])
+            case "JavaScript":
+                return ([javascript()])
+            case "C++":
+                return ([cpp()])
+            case "C":
+                return ([cpp()])
+            case "C#":
+                return ([cpp()])
+            case "PHP":
+                return ([php()])
+            case "Python":
+                return ([python()])
+            case "Rust":
+                return ([rust()])
+            case "SQL":
+                return ([sql()])            
+            default:
+                return ([markdown({ base: markdownLanguage, codeLanguages: languages })])
+        }
     }
 
-    const onChange = React.useCallback((value, viewUpdate) => {
-        setCode(value);
+    function addNewSourceFile(){
+        setNewSrcFileName("");
+        let newSrc = {
+            name: newSrcFileName,
+            code:"",
+            selected: false
+        }
+        setSolution((prevArr) => [...prevArr, newSrc]);
+    }
+
+    function addNewUnitTest(){
+        setNewTestFileName("");
+        let newUnitTest = {
+            name: newTestFileName,
+            code:"",
+            selected: false
+        }
+        setUnitTests((prevArr) => [...prevArr, newUnitTest]);
+    }
+
+    function removeSourceFile(){
+        let newSolution = [...solution];
+        newSolution.splice(activeSourceId, 1);
+        setSolution(newSolution);
+    }
+
+    function removeUnitTest(){
+        let newUnitTests = [...unitTests];
+        newUnitTests.splice(activeUnitTestId, 1);
+        setUnitTests(newUnitTests);
+    }
+
+    function activeSourceFile(event){
+        const { id } = event.target;
+        // save previous
+        let newSolution = [...solution];
+        newSolution.at(activeSourceId).code = sourceCode;
+        newSolution.at(activeSourceId).selected = false;
+        newSolution.at(id).selected = true;
+        setSolution(newSolution);
+
+        setActiveSourceId(id);
+        let src = solution.at(id);
+        setSourceCode(src.code);
+    }
+
+    function activeUnitTest(event){
+        const { id } = event.target;
+        // save previous
+        let newUnitTests = [...unitTests];
+        newUnitTests.at(activeUnitTestId).code = unitTestCode;
+        newUnitTests.at(activeUnitTestId).selected = false;
+        newUnitTests.at(id).selected = true;
+        setUnitTests(newUnitTests);
+
+        setActiveUnitTestId(id);
+        let unitTest = unitTests.at(id);
+        setUnitTestCode(unitTest.code);
+    }
+
+    const onSolChange = React.useCallback((value, viewUpdate) => {
+        setSourceCode(value);
     }, []);
 
-    function getTimeStamp() {
-        var now = new Date();
-        return ((now.getMonth() + 1) + '/' +
-                (now.getDate()) + '/' +
-                 now.getFullYear() + " " +
-                 now.getHours() + ':' +
-                 ((now.getMinutes() < 10)
-                     ? ("0" + now.getMinutes())
-                     : (now.getMinutes())) + ':' +
-                 ((now.getSeconds() < 10)
-                     ? ("0" + now.getSeconds())
-                     : (now.getSeconds())));
-    }
+    const onUnitTestChange = React.useCallback((value, viewUpdate) => {
+        setUnitTestCode(value);
+    }, []);
 
-    function defineLanguage(languageId){
-        let l = languageId;
-        if(l==62){
-            return ([java()]);  
-        }else if(l==63){
-            return ([javascript()]);
-        }else if( (l==75) || (l==76) || ((l>=48) && (l<=54)) ){
-            return ([cpp()]);
-        }else if(l==68){
-            return ([php()]);
-        }else if( (l==70) || (l==71) ){
-            return ([python()]);
-        }else if(l==73){
-            return ([rust()]);
-        }else if(l==82){
-            return ([sql()]); 
-        }else{
-            return ([markdown({ base: markdownLanguage, codeLanguages: languages })]);
-        }
-    }
-
-    async function subscribeTest(token) {
-        sessionStorage.removeItem("status");
-        sessionStorage.removeItem("statusText");
-        sessionStorage.removeItem("error");
-        try{
-            let response = await fetch(execModuleUrl + "/submissions/" + token,{
-                method:"GET",
-            });
-            
-            if (!response.ok) {
-                sessionStorage.setItem("status", response.status);
-                sessionStorage.setItem("statusText", response.statusText);
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-            const result = await response.json();
-            if(result.status.id < 3) {
-
-                let timeStamp = getTimeStamp();
-                setLogs((prevArr) => [...prevArr, {date: timeStamp, message: "Status: " + result.status.description,}]);
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                await subscribeTest(token);
-            }else {
-                    setLaunchResults((prevArr) => [...prevArr, result]);
-                    let timeStamp = getTimeStamp();
-                    setLogs((prevArr) => [...prevArr, {date: timeStamp, message: "Status: " + result.status.description,}]);
-                    let output = result.compile_output;
-                    if((output!==null) && (output!==undefined) && (output!=="")){
-                        setLogs((prevArr) => [...prevArr, {date: timeStamp, message: output,}]);
-                    }
-                    if((result.stderr!==null) && (result.stderr!==undefined) && (result.stderr!=="")){
-                        setLogs((prevArr) => [...prevArr, {date: timeStamp, message: result.stderr,}]);
-                    }
-                    if((result.stdout!==null) && (result.stdout!==undefined) && (result.stdout!=="")){
-                        setLogs((prevArr) => [...prevArr, {date: timeStamp, message: result.stdout,}]);
-                    }
-                    return result;
-            }
-        }
-        catch(error){
-            sessionStorage.setItem("error", error);
-            console.error("There has been a problem with your fetch operation:", error);
-            navigate("/error");
-        }
-    }
-
-    async function subscribeSave(token) {
-        sessionStorage.removeItem("status");
-        sessionStorage.removeItem("statusText");
-        sessionStorage.removeItem("error");
-        try{
-            let response = await fetch(execModuleUrl + "/submissions/" + token,{
-                method:"GET",
-            });
-
-            if (!response.ok) {
-                sessionStorage.setItem("status", response.status);
-                sessionStorage.setItem("statusText", response.statusText);
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-            const result = await response.json();
-            if(result.status.id < 3) {
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                await subscribeSave(token);
-            }else {
-                return result;
-            }
-        }
-        catch(error){
-            sessionStorage.setItem("error", error);
-            console.error("There has been a problem with your fetch operation:", error);
-            navigate("/error");
-        }
-    }
-    
     return(
 
         <div className="user-task">
@@ -355,6 +327,7 @@ function StartTask(){
                     </div>
                 }
             </>
+            {/* Main content*/}
             <div className="solution-container">
                 <div className="start-task-switch-bar">
                     <div className='start-task-radio'>
@@ -403,63 +376,71 @@ function StartTask(){
                 </div>
                 { (viewedBlock==="code") &&
                     <>
-                        <div className="user-details-code-container">
-                            <CodeMirror
-                                value={code}
-                                extensions={codeLanguage}
-                                theme="light"
-                                onChange={onChange}
-                                height="70vh"
-                                width="98vw"
-                            />
-                        </div>
-                        <div className="start-task-console-container">
-                            <div className='start-task-radio'>
+                        <div className="start-task-ref-sol-container">
+                            <div className="create-task-ref-sol-label-container">
+                                <span>Решение</span>
+                                <img className="create-task-icon" src={add_new_icon} onClick={addNewSourceFile}/>
+                                <img className="create-task-icon" src={remove_icon} onClick={removeSourceFile}/>
                                 <input
-                                        className="radio__input" 
-                                        type="radio"
-                                        name="lowerBar"
-                                        id='lowerBarR0'
-                                        value="log"
-                                        checked={lowerPanel==="log"}
-                                        onChange={lowerPanelRadio}
+                                    id="taskInput"
+                                    className="start-task-modal-input"
+                                    name="input"
+                                    onChange={()=>setNewSrcFileName(event.target.value)}
+                                    value={newSrcFileName}
                                 />
-                                <label className='start-task-lower-panel-input-label' htmlFor='lowerBarR0'>Консоль</label>
-                                <input 
-                                        className="radio__input" 
-                                        type="radio" 
-                                        name="lowerBar"
-                                        id='lowerBarR1'
-                                        value="input"
-                                        checked={lowerPanel==="input"}
-                                        onChange={lowerPanelRadio}
-                                />
-                                <label className='start-task-lower-panel-input-label' htmlFor='lowerBarR1'>Ввод</label>
                             </div>
-                            {   (lowerPanel==="log") &&
-                                    <div className="start-task-console">
-                                        {
-                                            logs.map( (log, itemId) =>
-                                                <div key={itemId}>
-                                                    <span>{log.date}</span>
-                                                    <span> --- </span>
-                                                    <span>{log.message}</span>                                                  
-                                                </div>
-                                            )
-                                        }
-                                    </div>
-                            }
-                            {   (lowerPanel==="input") &&
-                                    <div>
-                                        <textarea
-                                            className="start-task-test-input"
-                                            name="testInout"
-                                            onChange={(event) => setTestInput(event.target.value)}
-                                            value={testInput}
-                                        />
-                                    </div>
-
-                            }
+                            <div className="create-task-file-panel">
+                                {
+                                    solution.map((sol, id)=>
+                                        <span className={ (solution.at(id).selected) 
+                                            ? "create-task-ref-sol-list-highlight" 
+                                            : "create-task-ref-sol-list" }
+                                            id={id} onClick={activeSourceFile}>{sol.name}
+                                        </span>
+                                    )
+                                }
+                            </div>
+                            <div className="create-task-code-container">
+                                <CodeMirror
+                                    value={sourceCode}
+                                    extensions={defineLanguage(userTask.task.languageName)}
+                                    theme="light"
+                                    onChange={onSolChange}
+                                />
+                            </div>
+                        </div>
+                        <div className="start-task-ref-sol-container">
+                            <div className="create-task-ref-sol-label-container">
+                                <span>Тесты</span>
+                                <img className="create-task-icon" src={add_new_icon} onClick={addNewUnitTest}/>
+                                <img className="create-task-icon" src={remove_icon} onClick={removeUnitTest}/>
+                                <input
+                                    id="taskInput"
+                                    className="start-task-modal-input"
+                                    name="input"
+                                    onChange={()=>setNewTestFileName(event.target.value)}
+                                    value={newTestFileName}
+                                />
+                            </div>
+                            <div className="create-task-file-panel">
+                                {
+                                    unitTests.map((test, id)=>
+                                        <span className={ (unitTests.at(id).selected) 
+                                            ? "create-task-ref-sol-list-highlight" 
+                                            : "create-task-ref-sol-list" }
+                                            id={id} onClick={activeUnitTest}>{test.name}
+                                        </span>
+                                    )
+                                }
+                            </div>
+                            <div className="create-task-code-container">
+                                <CodeMirror
+                                    value={unitTestCode}
+                                    extensions={defineLanguage(userTask.task.languageName)}
+                                    theme="light"
+                                    onChange={onUnitTestChange}
+                                />
+                            </div>
                         </div>
                     </>
 
@@ -479,35 +460,7 @@ function StartTask(){
                         </div>
                 }
                 {   (viewedBlock==="result") &&
-                        <table className="user-details-table">
-                            <thead>
-                                <tr>
-                                    <th>Номер</th>
-                                    <th>Статус</th>
-                                    <th>Время(s)</th>
-                                    <th>Память(Kb)</th>
-                                    <th>Ввод</th>
-                                    <th>Вывод</th>
-                                    <th>Exit code</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    launchResults.map( (result, blockId) =>
-                                        <tr key={blockId}>
-                                            <td>{blockId}</td>
-                                            <td>{result.status.description}</td>
-                                            <td>{result.time}</td>
-                                            <td>{result.memory}</td>
-                                            <td>{testInput}</td>
-                                            <td>{result.stdout}</td>
-                                            <td>{result.exit_code}</td>
-                                        </tr>
-                                    )
-                                }
-                            </tbody>
-                    </table>
-
+                        <div className="start-task-test-launch-result">{atob(logs.result)}</div>
                 }
             </div>
         </div>

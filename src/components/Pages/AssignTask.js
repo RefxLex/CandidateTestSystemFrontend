@@ -7,7 +7,6 @@ import "./AssignTask.css";
 import CustomRequest from "../../hooks/CustomRequest";
 import chevron_down from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-chevron-down-20.png";
 import chevron_up from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-chevron-up-20.png";
-import check_done from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-done-21.png";
 import remove_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-minus-20.png';
 import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
 import slide_up_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-slide-up-50.png';
@@ -21,15 +20,12 @@ function AssignTask(){
     const [levels, setLevels] = useState([]);
     const [topics, setTopics] = useState([]);
     const [user, setUser] = useState({});
-    const [languages, setLanguages] = useState([]);
     const [taskName, setTaskName] = useState("");
     const [levelId, setLevelId] = useState("");
     const [topicId, setTopicId] = useState("");
-    const [defaultLanguageId, setDefaultLanguageId] = useState(63);
     const [backToTopButton, setBackToTopButton] = useState(false);
     const [expandDescription, setExpandDescription] = useState(false);
     const [mappedTasks, setMappedTasks] = useState(new Map());
-    const [mappedLang, setMappedLang] = useState(new Map());
     const [selectedArray, setSelectedArray] = useState([]);
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -59,20 +55,6 @@ function AssignTask(){
 
         const topicPromise = CustomRequest.doGet(baseURL + "/api/topic/all");
         topicPromise.then( (data) => setTopics(data));
-
-        const languagePromise = CustomRequest.doGet(baseURL + "/api/exec-module/languages");
-        languagePromise.then( (data) => {
-            let languages = [];
-            let map = new Map();
-            for (const iterator of data) {
-                if(iterator.is_archived == false){
-                    languages.push(iterator);
-                    map.set(iterator.id,iterator);
-                }
-            }
-            setMappedLang(map);
-            setLanguages(languages);
-        })
 
         window.addEventListener("scroll", () => {
             if(window.scrollY > 100){
@@ -138,13 +120,8 @@ function AssignTask(){
         }
 
         if( hasTask == false ){
-
-            task.languageId = defaultLanguageId;
-            task.languageName = (mappedLang.get(parseInt(defaultLanguageId))).name;
             newSelectedArray.push(task);
             setSelectedArray(newSelectedArray);
-        } else {
-            //console.log("duplicate")
         }
 
     }
@@ -159,7 +136,6 @@ function AssignTask(){
             }
         }
         setSelectedArray(newSelectedArray);
-        //console.log(newSelectedArray);
     }
 
     function handleAssign(){
@@ -167,9 +143,7 @@ function AssignTask(){
         let body = new Array(selectedArray.length);
         for(let i=0; i<selectedArray.length; i++){
             let task = {
-                taskId: selectedArray[i].id,
-                languageId: selectedArray[i].languageId,
-                languageName: selectedArray[i].languageName
+                taskId: selectedArray[i].id
             };
             body[i] = task;
         }
@@ -308,21 +282,6 @@ function AssignTask(){
                             }
                         </select>
                     </div>
-                    <div className="assign-task-label-language">
-                        <label htmlFor="language">Язык</label>
-                        <select className="assign-task-select"
-                            id="language"
-                            value={defaultLanguageId}
-                            onChange={(event) => setDefaultLanguageId(event.target.value)}
-                            name="language"
-                        >
-                            {
-                                languages.map( (language, rowId) =>
-                                    <option key={rowId} value={language.id}>{language.name}</option>
-                                )
-                            }   
-                        </select>
-                    </div>
                 </div>
                 <div className="assign-task-right-block">
                     <div className="assign-task-right-block-label">
@@ -366,6 +325,7 @@ function AssignTask(){
                         <th onClick={() => sorting("name")}>Название</th>
                         <th onClick={() => sorting("topic")}>Раздел</th>
                         <th onClick={() => sorting("taskDifficulty")}>Сложность</th>
+                        <th onClick={() => sorting("languageName")}>Язык</th>
                         <th>Описание</th>
                     </tr>
                 </thead>
@@ -379,6 +339,7 @@ function AssignTask(){
                                 <td className="assign-task-table-column">{task.name}</td>
                                 <td className="assign-task-table-column">{task.topic.name}</td>
                                 <td className="assign-task-table-column">{task.taskDifficulty.name}</td>
+                                <td className="assign-task-table-column">{task.languageName}</td>
                                 <td className="assign-task-table-description">
                                     {   expandDescription 
                                             ?   <>

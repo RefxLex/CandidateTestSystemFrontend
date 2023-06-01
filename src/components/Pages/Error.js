@@ -35,7 +35,7 @@ function Error(){
         }
         if(stCode==401){
             setStatusText("Unauthorized");
-            setHint("Not logged in or token expired");
+            setHint("Пользователь не авторизован либо срок действия токена истёк");
         }
         if(stCode==403){
             setStatusText("Forbidden")

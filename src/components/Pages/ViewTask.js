@@ -20,9 +20,8 @@ function StartTask(){
     
     const [userTask, setUserTask] = useState({});
     const [viewedBlock, setViewedBlock] = useState("instructions");
-    const [codeLanguage, setCodeLanguage] = useState([]);
     const [backToTopButton, setBackToTopButton] = useState(false);
-    const [codeDecoded, setCodeDecoded] = useState("");
+    const [solution, setSolution] = useState([]);
     let params = useParams();
 
     useEffect( () => {
@@ -30,9 +29,14 @@ function StartTask(){
         const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/" + params.userTaskId);
         userTaskPromise.then((data) => {
             setUserTask(data);
-            setCodeLanguage(defineLanguage(data.taskCodeLanguageId));
-            let code = atob(data.code);
-            setCodeDecoded(code);
+            let buffArr = [];
+            for (let i = 0; i < data.userTaskSolution.length; i++) {
+                let src = {
+                    code: atob(data.userTaskSolution[i].code)
+                }
+                buffArr[i] = src;
+            }
+            setSolution(buffArr);
         });
 
         window.addEventListener("scroll", () => {
@@ -49,24 +53,28 @@ function StartTask(){
         setViewedBlock(event.target.value);
     }
 
-    function defineLanguage(languageId){
-        let l = languageId;
-        if(l==62){
-            return ([java()]);  
-        }else if(l==63){
-            return ([javascript()]);
-        }else if( (l==75) || (l==76) || ((l>=48) && (l<=54)) ){
-            return ([cpp()]);
-        }else if(l==68){
-            return ([php()]);
-        }else if( (l==70) || (l==71) ){
-            return ([python()]);
-        }else if(l==73){
-            return ([rust()]);
-        }else if(l==82){
-            return ([sql()]); 
-        }else{
-            return ([markdown({ base: markdownLanguage, codeLanguages: languages })]);
+    function defineLanguage(languageName){
+        switch (languageName) {
+            case "Java":
+                return ([java()])
+            case "JavaScript":
+                return ([javascript()])
+            case "C++":
+                return ([cpp()])
+            case "C":
+                return ([cpp()])
+            case "C#":
+                return ([cpp()])
+            case "PHP":
+                return ([php()])
+            case "Python":
+                return ([python()])
+            case "Rust":
+                return ([rust()])
+            case "SQL":
+                return ([sql()])            
+            default:
+                return ([markdown({ base: markdownLanguage, codeLanguages: languages })])
         }
     }
 
@@ -115,14 +123,18 @@ function StartTask(){
                     <label className='radio__label' htmlFor='radio_3'>Комментарий</label>
                 </div>
                 { (viewedBlock==="code") &&
-                        <div className="user-details-code-container">
-                            <CodeMirror
-                                value={codeDecoded}
-                                extensions={codeLanguage}
-                                theme="light"
-                                readOnly={true}
-                            />
-                        </div>
+                        
+                            solution.map((sol, id) =>
+                                <div className="user-details-code-container">
+                                    <CodeMirror
+                                        value={sol.code}
+                                        extensions={defineLanguage(userTask.task.languageName)}
+                                        theme="light"
+                                        readOnly={true}
+                                    />
+                                </div>
+                            )
+                        
                 }
                 { (viewedBlock==="instructions") &&
                         <div className="user-task-instructions">
