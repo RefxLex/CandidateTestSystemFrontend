@@ -71,6 +71,16 @@ function UserPage(){
         }
     }
 
+    function calcTaskScore(testsPassed, overallTestsCount){
+        let testsPassedNum = parseInt(testsPassed);
+        let overallTestsCountNum = parseInt(overallTestsCount);
+        let score = "-";
+        if(overallTestsCountNum > 0){
+            score = (Math.round((testsPassedNum/overallTestsCountNum)*100)).toString() + "%"
+        }
+        return score;
+    }
+
     return(
         <div>
             <HeaderWork/>
@@ -130,8 +140,7 @@ function UserPage(){
                                             }
                                         </td>
                                         <td>{calcSubmitDate(userTask)}</td>
-                                        <td>{ (Math.round((parseInt(userTask.testsPassed)/parseInt(userTask.overallTestsCount))*100))
-                                        .toString() + "%" }</td>
+                                        <td>{calcTaskScore(userTask.testsPassed, userTask.overallTestsCount)}</td>
                                         <td>{userTask.timeSpent}</td>
                                     </tr>
                                 )

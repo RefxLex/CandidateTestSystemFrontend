@@ -16,7 +16,6 @@ import status_all from '/work/web_projects/CandidateTestSystemFrontend/src/image
 import mail_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/mail-143.png';
 import baseURL from '../../api/baseUrl';
 import CustomRequest from '../../hooks/CustomRequest';
-import ErrorContext from '../../context/ErrorContext';
 
 function AdminPage(){
 

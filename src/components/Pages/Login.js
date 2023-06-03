@@ -4,7 +4,6 @@ import { useContext } from "react";
 import AuthContext from "../../context/AuthProvider";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import baseURL from "../../api/baseUrl";
-import CustomRequest from "../../hooks/CustomRequest";
 import "./Login.css";
 
 function Login(){

@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import "./StartTask.css";
 import CustomRequest from "../../hooks/CustomRequest";
 import baseURL from "../../api/baseUrl";
-import execModuleUrl from "../../api/execModuleUrl";
 import back_icon from "../../images/icons8-back-arrow-30_2.png";
 import launch_icon from '../../images/icons8-play-20.png';
 import add_new_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-add-new-21.png';
@@ -32,11 +31,10 @@ function StartTask(){
     const [completeModal, setCompleteModal] = useState(false);
     const [saveModal, setSaveModal] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [processing, setProcessing] = useState(false);
     const [solution, setSolution] = useState([]);
     const [unitTests, setUnitTests] = useState([]);
-    const [logs, setLogs] = useState({
-        result:""
-    });
+    const [logs, setLogs] = useState([]);
     const navigate = useNavigate();
     let params = useParams();
 
@@ -51,6 +49,7 @@ function StartTask(){
 
     function handleLaunch(){
 
+        setProcessing(true);
         // save current editor
         const saveCurrent = new Promise((resolve, reject) => {
             let newSolution = [...solution];
@@ -96,6 +95,7 @@ function StartTask(){
             })
             .then((response) => {
                 if (response.ok) {
+                    setProcessing(false);
                     return response.json();
                 }
                 else{
@@ -104,7 +104,10 @@ function StartTask(){
                     navigate("/error");
                 }
             })
-            .then((data)=>setLogs(data))
+            .then((data) => {
+                parseCompileResult(atob(data.result));
+                setViewedBlock("result");
+            })
             .catch((error) => {
                 sessionStorage.setItem("error", error);
                 navigate("/error");
@@ -113,18 +116,26 @@ function StartTask(){
     }
 
     function handleComplete(event){
+
         event.preventDefault();
         setCompleteModal(!completeModal);
         setSaveModal(!saveModal);
-        let codeEncoded = btoa(code);
+
+        let solEncoded = [];
+        for (let i = 0; i < solution.length; i++) {
+            let src = {
+                code: btoa(solution[i].code)
+            }
+            solEncoded[i] = src;
+        }
         let body = {
-            code: codeEncoded
+            solution: solEncoded
         }
 
         sessionStorage.removeItem("status");
         sessionStorage.removeItem("statusText");
         sessionStorage.removeItem("error");
-        fetch(baseURL + "/api/exec-module/submission/" + params.userTaskId, {
+        fetch(baseURL + "/api/user-task/complete/" + params.userTaskId, {
             method:"PUT",
             credentials: "include",
             headers: {
@@ -134,6 +145,7 @@ function StartTask(){
         })
         .then((response) => {
             if (response.ok) {
+                setSaved(true);
                 return response.json();
             }
             else{
@@ -142,44 +154,8 @@ function StartTask(){
                 navigate("/error");
             }
         })
-        .then((result) => {
-            let requests = [];
-            result.map(obj => 
-                {
-                    let subPromise = subscribeSave(obj.token);
-                    requests.push(subPromise);
-                });
-            Promise.all(requests)
-            .then(() => {
-
-                sessionStorage.removeItem("status");
-                sessionStorage.removeItem("statusText");
-                sessionStorage.removeItem("error");
-                fetch(baseURL + "/api/exec-module/submission/result/" + params.userTaskId, {
-                    method:"PUT",
-                    credentials: "include"
-                })
-                .then((response) => {
-                    if (response.ok) {
-                        setSaved(true);
-                    }
-                    else{
-                        sessionStorage.setItem("status", response.status);
-                        sessionStorage.setItem("statusText", response.statusText);
-                        navigate("/error");
-                    }
-                })
-                .catch((error) => {
-                    sessionStorage.setItem("error", error);
-                    console.error("There has been a problem with your fetch operation:", error);
-                    navigate("/error");
-                });
-
-            });
-        })
         .catch((error) => {
             sessionStorage.setItem("error", error);
-            console.error("There has been a problem with your fetch operation:", error);
             navigate("/error");
         });
     }
@@ -281,6 +257,45 @@ function StartTask(){
         setUnitTestCode(value);
     }, []);
 
+    function parseCompileResult(result){
+        let lineIndex = 0;
+        let text = result;
+        let endLineSubstr="";
+        let endLine = 0;
+        let line = "";
+        let lineArray = [];
+        while(lineIndex != -1){
+            lineIndex = text.indexOf("~");
+            if(lineIndex != -1) {
+                endLineSubstr = text.substring(lineIndex+1,text.lenght);
+                //console.log("endLineSubstr" + "\n" + endLineSubstr);
+                endLine = endLineSubstr.indexOf("~");
+                //console.log("endLine" + endLine);
+                if(endLine != -1){
+                    line = text.substring(lineIndex, endLine+1);
+                    line = '\n' + line;
+                    console.log("line" + line);
+                    lineArray.push(line);
+                    text = text.substring(endLine+1, text.lenght);
+                    //console.log("text" + "\n" + text);
+                }
+                else{
+                    line = text.substring(lineIndex, text.lenght);
+                    line = '\n' + line;
+                    console.log("line" + line);
+                    text = "";
+                    lineArray.push(line);
+                }
+            }
+        }
+        setLogs([...lineArray]);
+    }
+
+    function closeSaveModal(){
+        setSaveModal(!saveModal);
+        navigate("/user");
+    }
+
     return(
 
         <div className="user-task">
@@ -311,14 +326,14 @@ function StartTask(){
                         <div className="modal-content">
                             <div>
                                 {   saved 
-                                        ?<span>Готово</span>
-                                        :<span>Сохранение...</span>
+                                        ? <span>Готово</span>
+                                        : <span>Сохранение...</span>
                                 }
                             </div>
                             {   saved &&
                                     <form>
                                         <div className="start-task-modal-btn-container">
-                                            <button onClick={() => {setSaveModal(!saveModal); navigate("/user")}} 
+                                            <button onClick={closeSaveModal} 
                                             className="user-details-accept-button">Ок</button>
                                         </div>
                                     </form>
@@ -367,7 +382,10 @@ function StartTask(){
                             <button onClick={handleLaunch} className="start-task-accept-button">
                                 <img src={launch_icon} alt="run"/>
                             </button>
-                        </div>
+                            { processing &&
+                                <span className="start-task-test-launch-progress-label">Обработка...</span>
+                            }
+                    </div>
                     <div className="start-task-back-btn-container">
                         <button className="solution-back-btn" onClick={() => navigate(-1)}>Обратно
                             <img src={back_icon} alt="close"/>
@@ -460,7 +478,15 @@ function StartTask(){
                         </div>
                 }
                 {   (viewedBlock==="result") &&
-                        <div className="start-task-test-launch-result">{atob(logs.result)}</div>
+                        <div className="user-task-compile-container">
+                            <div>
+                                {
+                                    logs.map( (line, id) =>
+                                        <div key={id}>{line}</div>
+                                    )
+                                }
+                            </div>
+                        </div>
                 }
             </div>
         </div>

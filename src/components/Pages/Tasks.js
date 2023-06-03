@@ -10,7 +10,6 @@ import chevron_down from "/work/web_projects/CandidateTestSystemFrontend/src/ima
 import chevron_up from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-chevron-up-20.png";
 import slide_up_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-slide-up-50.png';
 import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
-import delete_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-delete-20.png';
 
 
 

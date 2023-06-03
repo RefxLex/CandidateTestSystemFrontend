@@ -92,3 +92,7 @@
     border: 1px solid #8e8e8e;
     font-size: 16px;
 }
+
+.start-task-test-launch-progress-label {
+    padding-left: 15px;
+}
