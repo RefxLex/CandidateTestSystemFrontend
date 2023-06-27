@@ -26,7 +26,7 @@ function StartTask(){
 
     useEffect( () => {
 
-        const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/" + params.userTaskId);
+        const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/find-one-sol-unexposed/" + params.userTaskId);
         userTaskPromise.then((data) => {
             setUserTask(data);
             let buffArr = [];
@@ -128,7 +128,7 @@ function StartTask(){
                                 <div className="user-details-code-container">
                                     <CodeMirror
                                         value={sol.code}
-                                        extensions={defineLanguage(userTask.task.languageName)}
+                                        extensions={defineLanguage(userTask.taskLanguageName)}
                                         theme="light"
                                         readOnly={true}
                                     />
@@ -139,10 +139,10 @@ function StartTask(){
                 { (viewedBlock==="instructions") &&
                         <div className="user-task-instructions">
                             <ul>
-                                <li className="user-task-instructions-name">{userTask.task?.name}</li>
+                                <li className="user-task-instructions-name">{userTask.taskName}</li>
                                 <li>
                                     <label>Описание:</label>
-                                    <p>{userTask.task?.description}</p>
+                                    <p>{userTask.taskDescription}</p>
                                 </li>
                             </ul>
                         </div>

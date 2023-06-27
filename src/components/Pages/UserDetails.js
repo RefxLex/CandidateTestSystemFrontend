@@ -32,7 +32,7 @@ function UserDetails(){
     const userPromise = CustomRequest.doGet(baseURL + "/api/user/" + params.userId);
     userPromise.then( (data) => setUser(data));
   
-    const userTasksPromise = CustomRequest.doGet(baseURL + "/api/user-task/find/" + params.userId);
+    const userTasksPromise = CustomRequest.doGet(baseURL + "/api/user-task/find-list/" + params.userId);
     userTasksPromise.then( (data) => setUserTasks(data));
 
     },[])

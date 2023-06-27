@@ -40,7 +40,7 @@ function StartTask(){
 
     useEffect( () => {
 
-        const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/" + params.userTaskId);
+        const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/find-one-sol-unexposed/" + params.userTaskId);
         userTaskPromise.then((data) => {
             setUserTask(data);
         });
@@ -118,45 +118,58 @@ function StartTask(){
     function handleComplete(event){
 
         event.preventDefault();
-        setCompleteModal(!completeModal);
-        setSaveModal(!saveModal);
-
-        let solEncoded = [];
-        for (let i = 0; i < solution.length; i++) {
-            let src = {
-                code: btoa(solution[i].code)
-            }
-            solEncoded[i] = src;
-        }
-        let body = {
-            solution: solEncoded
-        }
-
-        sessionStorage.removeItem("status");
-        sessionStorage.removeItem("statusText");
-        sessionStorage.removeItem("error");
-        fetch(baseURL + "/api/user-task/complete/" + params.userTaskId, {
-            method:"PUT",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
+        // save current editor
+        const saveCurrent = new Promise((resolve, reject) => {
+            let newSolution = [...solution];
+            let newUnitTests = [...unitTests];
+            newSolution.at(activeSourceId).code = sourceCode;
+            //newUnitTests.at(activeUnitTestId).code = unitTestCode;
+            setSolution(newSolution);
+            //setUnitTests(newUnitTests);
+            resolve();
         })
-        .then((response) => {
-            if (response.ok) {
-                setSaved(true);
-                return response.json();
+        saveCurrent.then(()=>{
+
+            setCompleteModal(!completeModal);
+            setSaveModal(!saveModal);
+
+            let solEncoded = [];
+            for (let i = 0; i < solution.length; i++) {
+                let src = {
+                    code: btoa(solution[i].code)
+                }
+                solEncoded[i] = src;
             }
-            else{
-                sessionStorage.setItem("status", response.status);
-                sessionStorage.setItem("statusText", response.statusText);
+            let body = {
+                solution: solEncoded
+            }
+
+            sessionStorage.removeItem("status");
+            sessionStorage.removeItem("statusText");
+            sessionStorage.removeItem("error");
+            fetch(baseURL + "/api/user-task/complete/" + params.userTaskId, {
+                method:"PUT",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+            })
+            .then((response) => {
+                if (response.ok) {
+                    setSaved(true);
+                    return response.json();
+                }
+                else{
+                    sessionStorage.setItem("status", response.status);
+                    sessionStorage.setItem("statusText", response.statusText);
+                    navigate("/error");
+                }
+            })
+            .catch((error) => {
+                sessionStorage.setItem("error", error);
                 navigate("/error");
-            }
-        })
-        .catch((error) => {
-            sessionStorage.setItem("error", error);
-            navigate("/error");
+            });
         });
     }
 
@@ -366,7 +379,7 @@ function StartTask(){
                                 onChange={handleRadio}
                         />
                         <label className='radio__label' htmlFor='radio_2'>Задание</label>
-                        <input 
+                        {/*<input 
                                 className="radio__input" 
                                 type="radio" 
                                 name="leftBlock"
@@ -375,9 +388,9 @@ function StartTask(){
                                 checked={viewedBlock==="result"}
                                 onChange={handleRadio}
                         />
-                        <label className='radio__label' htmlFor='radio_3'>Результат</label>
+                        <label className='radio__label' htmlFor='radio_3'>Результат</label>*/}
                     </div>
-                    <div className="start-task-launch-btn-container">
+                    {/*<div className="start-task-launch-btn-container">
                             <span>Запустить</span>
                             <button onClick={handleLaunch} className="start-task-accept-button">
                                 <img src={launch_icon} alt="run"/>
@@ -385,7 +398,7 @@ function StartTask(){
                             { processing &&
                                 <span className="start-task-test-launch-progress-label">Обработка...</span>
                             }
-                    </div>
+                        </div>*/}
                     <div className="start-task-back-btn-container">
                         <button className="solution-back-btn" onClick={() => navigate(-1)}>Обратно
                             <img src={back_icon} alt="close"/>
@@ -410,7 +423,7 @@ function StartTask(){
                             <div className="create-task-file-panel">
                                 {
                                     solution.map((sol, id)=>
-                                        <span className={ (solution.at(id).selected) 
+                                        <span key={id} className={ (solution.at(id).selected) 
                                             ? "create-task-ref-sol-list-highlight" 
                                             : "create-task-ref-sol-list" }
                                             id={id} onClick={activeSourceFile}>{sol.name}
@@ -421,13 +434,13 @@ function StartTask(){
                             <div className="create-task-code-container">
                                 <CodeMirror
                                     value={sourceCode}
-                                    extensions={defineLanguage(userTask.task.languageName)}
+                                    extensions={defineLanguage(userTask.taskLanguageName)}
                                     theme="light"
                                     onChange={onSolChange}
                                 />
                             </div>
                         </div>
-                        <div className="start-task-ref-sol-container">
+                        {/*<div className="start-task-ref-sol-container">
                             <div className="create-task-ref-sol-label-container">
                                 <span>Тесты</span>
                                 <img className="create-task-icon" src={add_new_icon} onClick={addNewUnitTest}/>
@@ -459,17 +472,17 @@ function StartTask(){
                                     onChange={onUnitTestChange}
                                 />
                             </div>
-                        </div>
+                        </div>*/}
                     </>
 
                 }
                 { (viewedBlock==="instructions") &&
                         <div className="user-task-instructions">
                             <ul>
-                                <li className="user-task-instructions-name">{userTask.task?.name}</li>
+                                <li className="user-task-instructions-name">{userTask.taskName}</li>
                                 <li>
                                     <label>Описание:</label>
-                                    <p>{userTask.task?.description}</p>
+                                    <p>{userTask.taskDescription}</p>
                                 </li>
                             </ul>
                             <div className="start-task-accept-button-container">

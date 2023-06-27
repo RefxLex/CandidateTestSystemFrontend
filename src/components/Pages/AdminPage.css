@@ -181,6 +181,15 @@
     background-color: rgba(63, 85, 200, 0.8);
 }
 
+.admin-page-error-block {
+    display: flex;
+    align-items: center;
+}
+
+.admin-page-warning-icon {
+    padding-right: 10px;
+}
+
 
 
 

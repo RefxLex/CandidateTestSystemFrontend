@@ -16,6 +16,7 @@ import status_all from '/work/web_projects/CandidateTestSystemFrontend/src/image
 import mail_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/mail-143.png';
 import baseURL from '../../api/baseUrl';
 import CustomRequest from '../../hooks/CustomRequest';
+import warning_icon from "../../images/icons8-error-30.png";
 
 function AdminPage(){
 
@@ -24,13 +25,12 @@ function AdminPage(){
     const [fullName, setFullName] = useState("");
     const [users, setUsers] = useState([]);
     const [order, setOrder] = useState("ASC");
-
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage, setPostsPerPage] = useState(5);
     const [search, setSearch] = useSearchParams();
     const location = useLocation();
-
+    const [errorMsg, setErrorMsg] = useState("");
     const [modal, setModal] = useState(false);
     const [profile, setProfile]=useState({
         fullName: "",
@@ -90,6 +90,98 @@ function AdminPage(){
         const userPromise = CustomRequest.doGet(baseURL + "/api/user/filter?status=" + status + "&full_name=" + fullName);
         userPromise.then((data) => setUsers(data));
     }
+
+    function handleSave(){
+        let responseStatus;
+        setErrorMsg("");
+        if(profile.fullName===""){
+            setErrorMsg("Поле ФИО не должно быть пустым!");
+            return;
+        } else if(profile.email===""){
+            setErrorMsg("Поле эл.почта не должно быть пустым!");
+            return;
+        } else if(profile.phone===""){
+            setErrorMsg("Поле тел. не должно быть пустым!");
+            return;
+        }else if(emailValidation()==false){
+            setErrorMsg("Поле эл. почта не содержит эл. почту!");
+            return;
+        }else if(phoneValidation()==false){
+            setErrorMsg("Поле тел. не содержит номер телефона!");
+            return;
+        }
+        else {
+            sessionStorage.removeItem("status");
+            sessionStorage.removeItem("statusText");
+            sessionStorage.removeItem("error");
+            fetch(baseURL + "/api/user/create", {
+                method:"POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(profile),
+            })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+                else{
+                    if(response.status==400){
+                        responseStatus = response.status;
+                        return response.json();
+                    } else {
+                        sessionStorage.setItem("status", response.status);
+                        sessionStorage.setItem("statusText", response.statusText);
+                        navigate("/error");
+                    }
+                }
+            })
+            .then(result => {
+                if(responseStatus==400){
+                    try{
+                        if((result.message).includes("Email")){
+                            setErrorMsg("Пользователь с такой эл.почтой уже существует!");
+                        }else if ((result.message).includes("Phone")){
+                            setErrorMsg("Пользователь с таким номером телефона уже существует!");
+                        }
+                    }
+                    catch(TypeError){
+                        console.log(TypeError);
+                        setErrorMsg("bad request");
+                    }              
+                }else{
+                    toggleModal();
+                    setUsers([...users, result]); 
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                sessionStorage.setItem("error", error);
+                navigate("/error");
+            });
+        }
+
+    }
+
+    const emailValidation = () => {
+        const regEx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        if (regEx.test(profile.email)) {
+          return true;
+        } else {
+          return false;
+        }
+    }
+
+    const phoneValidation = () => {
+        const regEx = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
+        if (regEx.test(profile.phone)) {
+          return true;
+        } else {
+          return false;
+        }
+    }
+    
 
     function handleInput(event) {
         setFullName(event.target.value);
@@ -183,14 +275,6 @@ function AdminPage(){
         }))
     }
 
-    function handleSave(){
-        const userPromise = CustomRequest.doPostWithBody(baseURL + "/api/user/create", profile);
-        userPromise.then( (data) => {
-            toggleModal();
-            setUsers([...users, data]);
-        });
-    }
-
     function translateToRussian(status){
         switch (status) {
             case "started":
@@ -247,6 +331,7 @@ function AdminPage(){
                                         id="phone"
                                         onChange={onChange}
                                         value={profile.phone}
+                                        required
                                     />
                                 </div>
                                 <div className="modal-txt-field">
@@ -258,9 +343,17 @@ function AdminPage(){
                                         value={profile.info}
                                     />
                                 </div>
+                                <div className="admin-page-error-block">
+                                    { errorMsg &&
+                                        <>
+                                        <img src={warning_icon} className='admin-page-warning-icon'/>
+                                        <span>{errorMsg}</span>
+                                        </>
+                                    }
+                                </div>
                                 <div className="modal-btn-container">
-                                    <button onClick={handleSave} className="user-details-accept-button">Сохранить</button>
                                     <button onClick={toggleModal} className="user-details-cancel-button">Отмена</button>
+                                    <button onClick={handleSave} className="user-details-accept-button">Сохранить</button>
                                 </div>
                             </form>
                         </div>

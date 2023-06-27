@@ -36,22 +36,6 @@ function Login(){
             password: pwd
         }
 
-        //const credentialsPromise = CustomRequest.doPostWithBody(baseURL + "/api/auth/signin", body);
-        /*
-        credentialsPromise.then((data) => {
-            const roles = data.roles;
-            const id = data.id;
-            localStorage.setItem("id", id);
-            localStorage.setItem("role", roles.at(0));
-            setAuth({
-                id: id,
-                roles: [roles.at(0)]
-            })
-            setEmail('');
-            setPwd('');
-            navigate(from, { replace: true });
-        }) */
-
         sessionStorage.removeItem("status");
         sessionStorage.removeItem("statusText");
         sessionStorage.removeItem("error");
@@ -68,9 +52,14 @@ function Login(){
                 return response.json();
             }
             else{
-                sessionStorage.setItem("status", response.status);
-                sessionStorage.setItem("statusText", response.statusText);
-                navigate("/error");
+                if(response.status==401){
+                    setErrMsg("неправильный email или пароль")
+                    throw new Error("invalid email or password");
+                } else {
+                    sessionStorage.setItem("status", response.status);
+                    sessionStorage.setItem("statusText", response.statusText);
+                    navigate("/error");
+                }
             }
         })
         .then(result => {
@@ -87,8 +76,7 @@ function Login(){
             navigate(from, { replace: true });
         })
         .catch((error) => {
-            sessionStorage.setItem("error", error);
-            navigate("/error");
+            console.error(error);
         });
     }
 

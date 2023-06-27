@@ -15,7 +15,7 @@ function UserPage(){
     const [selectedId, setSelectedId] = useState();
 
     useEffect( () => {
-        const userTasksPromise = CustomRequest.doGet(baseURL + "/api/user-task/find/" + id);
+        const userTasksPromise = CustomRequest.doGet(baseURL + "/api/user-task/find-list-sol-unexposed/" + id);
         userTasksPromise.then( (data) => setUserTasks(data));
     },[])
 
@@ -130,8 +130,8 @@ function UserPage(){
                                             <img id={rowId} onClick={defineNextPage}
                                             src={search_icon} alt="view" className="user-details-edit-icon"/>
                                         </td>
-                                        <td>{userTask.task.name}</td>
-                                        <td>{userTask.task.languageName}</td>
+                                        <td>{userTask.taskName}</td>
+                                        <td>{userTask.taskLanguageName}</td>
                                         <td>{userTask.assignDate.substring(0,10) + " " +  userTask.assignDate.substring(11,19)}</td>
                                         <td>
                                             { (userTask.completed)

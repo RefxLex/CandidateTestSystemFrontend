@@ -7,8 +7,6 @@ import baseURL from "../../api/baseUrl";
 import sonarURL from "../../api/sonarUrl";
 import back_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-back-arrow-30_2.png';
 import slide_up_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-slide-up-50.png';
-import expand_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-more-information-20.png';
-import close_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-window-30.png';
 import reject_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-20.png';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
@@ -40,11 +38,12 @@ function UserTask() {
 
     useEffect( () => {
 
-        const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/" + params.userTaskId);
+        const userTaskPromise = CustomRequest.doGet(baseURL + "/api/user-task/find-one/" + params.userTaskId);
         userTaskPromise.then((data) => {
             setUserTask(data);
             setSolution(data.userTaskSolution);
             parseCompileResult(atob(data.resultReport));
+            setComment(data.comment);
             //console.log(data);
         });
 

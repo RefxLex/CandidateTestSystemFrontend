@@ -24,7 +24,7 @@ export default function Header(){
         sessionStorage.removeItem("status");
         sessionStorage.removeItem("statusText");
         sessionStorage.removeItem("error");
-        fetch(baseURL + resourceURL, {
+        fetch(baseURL + "/api/auth/signout", {
             method:"POST",
             credentials: "include"
         })
