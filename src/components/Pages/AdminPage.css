@@ -54,9 +54,14 @@
 }
 
 .admin_page_container {
-    display: flex;
-    justify-content: space-between;
-    align-items:center;
+    display: grid;
+    grid-template-columns: min-content 5vw min-content 1fr;
+    grid-template-rows: 40px min-content;
+}
+
+.table_container {
+    grid-column-start: 3;
+    grid-row-start: 2;
 }
 
 .admin_page_search_container {
@@ -64,6 +69,7 @@
     padding-top: 30px;
     width: 100%;
     max-width: 300px;
+    grid-row-start: 2;
 }
 
 .admin_page_search_bar {

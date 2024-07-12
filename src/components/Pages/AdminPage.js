@@ -438,40 +438,42 @@ function AdminPage(){
                         <button onClick={toggleModal} className="admin_page_invite_button">Добавить кандидата</button>
                     </div>
                 </div>
-                <div className='table_container'>
-                    <table className='content-table'>
-                        <thead>
-                            <tr>
-                                <th className='content-table-first-column'> </th>
-                                <th onClick={()=> sorting("fullName")} className='content-table-second-column'>Кандидат</th>
-                                <th onClick={()=> sorting("userStatus")} className='content-table-column'>Статус</th>
-                                <th onClick={()=> sorting("lastScore")}  className='content-table-column'>Баллы</th>
-                                <th onClick={()=> sorting("lastActivity")} className='content-table-column'>Активность</th>
-                            </tr>
-                        </thead>
-                        <tbody id='userTable'>
-                            {
-                                currentPosts.map((user, rowId) => 
-                                <tr key={rowId}>
-                                    <td className='content-table-first-column'><img src={defineTableRowIcon(user.userStatus)}/></td>
-                                    <td className='content-table-second-column' 
-                                        id={user.id} 
-                                        onClick={toUserDetails}
-                                    >
-                                        {user.fullName}
-                                    </td>
-                                    <td className='content-table-column'>{translateToRussian(user.userStatus)}</td>
-                                    <td className='content-table-column'>{user.lastScore}</td>
-                                    <td className='content-table-column'>{user.lastActivity}</td>
+
+                    <div className='table_container'>
+                        <table className='content-table'>
+                            <thead>
+                                <tr>
+                                    <th className='content-table-first-column'> </th>
+                                    <th onClick={()=> sorting("fullName")} className='content-table-second-column'>Кандидат</th>
+                                    <th onClick={()=> sorting("userStatus")} className='content-table-column'>Статус</th>
+                                    <th onClick={()=> sorting("lastScore")}  className='content-table-column'>Баллы</th>
+                                    <th onClick={()=> sorting("lastActivity")} className='content-table-column'>Активность</th>
                                 </tr>
-                                )
-                            }
-                        </tbody>
-                    </table>
-                    <div className="assign-task-pagination">
-                        <Pagination postsPerPage={postsPerPage} totalPosts={users.length} paginate={paginate} />
+                            </thead>
+                            <tbody id='userTable'>
+                                {
+                                    currentPosts.map((user, rowId) => 
+                                    <tr key={rowId}>
+                                        <td className='content-table-first-column'><img src={defineTableRowIcon(user.userStatus)}/></td>
+                                        <td className='content-table-second-column' 
+                                            id={user.id} 
+                                            onClick={toUserDetails}
+                                        >
+                                            {user.fullName}
+                                        </td>
+                                        <td className='content-table-column'>{translateToRussian(user.userStatus)}</td>
+                                        <td className='content-table-column'>{user.lastScore}</td>
+                                        <td className='content-table-column'>{user.lastActivity}</td>
+                                    </tr>
+                                    )
+                                }
+                            </tbody>
+                        </table>
+                        <div className="assign-task-pagination">
+                            <Pagination postsPerPage={postsPerPage} totalPosts={users.length} paginate={paginate} />
+                        </div>
                     </div>
-                </div>
+
             </div>
         </div>
     )
