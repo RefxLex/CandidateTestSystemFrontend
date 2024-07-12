@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import arrow_right from '/work/web_projects/CandidateTestSystemFrontend/src/images/arrow-right-40_2.png';
-import approve_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/approve_icon1.png';
-import reject_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-close-20.png';
-import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
-import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
-import delete_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-delete-20.png';
+import arrow_right from '../../images/arrow-right-40_2.png';
+import approve_icon from '../../images/approve_icon1.png';
+import reject_icon from '../../images/icons8-close-20.png';
+import edit_icon from '../../images/icons8-pencil-20.png';
+import search_icon from '../../images/icons8-search-20.png';
+import delete_icon from '../../images/icons8-delete-20.png';
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/baseUrl";
 import "./UserDetails.css";

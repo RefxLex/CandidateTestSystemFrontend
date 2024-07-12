@@ -4,7 +4,7 @@ import HeaderWork from "../HeaderWork";
 import "./ViewTask.css";
 import baseURL from "../../api/baseUrl";
 import CustomRequest from "../../hooks/CustomRequest";
-import slide_up_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-slide-up-50.png';
+import slide_up_icon from '../../images/icons8-slide-up-50.png';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { java } from '@codemirror/lang-java';

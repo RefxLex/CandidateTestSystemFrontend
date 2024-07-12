@@ -4,7 +4,7 @@ import HeaderWork from '../HeaderWork';
 import baseURL from '../../api/baseUrl';
 import "./UserPage.css";
 import CustomRequest from '../../hooks/CustomRequest';
-import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
+import search_icon from '../../images/icons8-search-20.png';
 
 function UserPage(){
 

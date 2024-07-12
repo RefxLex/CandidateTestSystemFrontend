@@ -5,11 +5,11 @@ import Pagination from "../Pagination";
 import baseURL from "../../api/baseUrl";
 import CustomRequest from "../../hooks/CustomRequest";
 import "./Tasks.css";
-import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
-import chevron_down from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-chevron-down-20.png";
-import chevron_up from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-chevron-up-20.png";
-import slide_up_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-slide-up-50.png';
-import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
+import search_icon from '../../images/icons8-search-20.png';
+import chevron_down from "../../images/icons8-chevron-down-20.png";
+import chevron_up from "../../images/icons8-chevron-up-20.png";
+import slide_up_icon from '../../images/icons8-slide-up-50.png';
+import edit_icon from '../../images/icons8-pencil-20.png';
 
 
 

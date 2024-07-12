@@ -5,7 +5,7 @@ import CustomRequest from "../../hooks/CustomRequest";
 import baseURL from "../../api/baseUrl";
 import back_icon from "../../images/icons8-back-arrow-30_2.png";
 import launch_icon from '../../images/icons8-play-20.png';
-import add_new_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-add-new-21.png';
+import add_new_icon from '../../images/icons8-add-new-21.png';
 import remove_icon from "../../images/icons8-minus-20_square.png";
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';

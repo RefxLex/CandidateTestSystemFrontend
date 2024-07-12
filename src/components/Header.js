@@ -66,8 +66,8 @@ export default function Header(){
             <img className="logo" src={logos} alt="cleverhire_logo" onClick={imgNav}/>
             <nav>
                 <ul className="nav__links">
-                    <li><a href="#">О проекте</a></li>
-                    <li><a href="#">Контакты</a></li>
+                    <li><a href="">О проекте</a></li>
+                    <li><a href="">Контакты</a></li>
                 </ul>
             </nav>
             <div>

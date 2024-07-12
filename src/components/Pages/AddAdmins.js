@@ -4,7 +4,7 @@ import Pagination from "../Pagination";
 import baseURL from "../../api/baseUrl";
 import "./AddAdmins.css";
 import CustomRequest from "../../hooks/CustomRequest";
-import delete_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-delete-20.png';
+import delete_icon from '../../images/icons8-delete-20.png';
 
 function AddAdmins(){
 

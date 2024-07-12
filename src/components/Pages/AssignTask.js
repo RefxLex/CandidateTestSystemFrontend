@@ -5,12 +5,12 @@ import HeaderWork from "../HeaderWork";
 import Pagination from "../Pagination";
 import "./AssignTask.css";
 import CustomRequest from "../../hooks/CustomRequest";
-import chevron_down from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-chevron-down-20.png";
-import chevron_up from "/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-chevron-up-20.png";
-import remove_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-minus-20.png';
-import search_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-search-20.png';
-import slide_up_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-slide-up-50.png';
-import add_new_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-add-new-21.png';
+import chevron_down from "../../images/icons8-chevron-down-20.png";
+import chevron_up from "../../images/icons8-chevron-up-20.png";
+import remove_icon from '../../images/icons8-minus-20.png';
+import search_icon from '../../images/icons8-search-20.png';
+import slide_up_icon from '../../images/icons8-slide-up-50.png';
+import add_new_icon from '../../images/icons8-add-new-21.png';
 
 function AssignTask(){
 

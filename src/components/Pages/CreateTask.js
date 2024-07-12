@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./CreateTask.css";
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/baseUrl";
-import add_new_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-add-new-21.png';
+import add_new_icon from '../../images/icons8-add-new-21.png';
 import remove_icon from "../../images/icons8-minus-20_square.png";
 import CustomRequest from "../../hooks/CustomRequest";
 import CodeMirror from '@uiw/react-codemirror';

@@ -3,7 +3,7 @@ import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/baseUrl";
 import "./Topics.css";
 import CustomRequest from "../../hooks/CustomRequest";
-import edit_icon from '/work/web_projects/CandidateTestSystemFrontend/src/images/icons8-pencil-20.png';
+import edit_icon from '../../images/icons8-pencil-20.png';
 
 function Topics(){
 
