@@ -1,9 +1,11 @@
 import React, { useState , useEffect } from "react";
 import HeaderWork from "../HeaderWork";
 import baseURL from "../../api/baseUrl";
+import baseURLTwo from "../../api/baseURLTwo";
 import "./Topics.css";
 import CustomRequest from "../../hooks/CustomRequest";
 import edit_icon from '../../images/icons8-pencil-20.png';
+import delete_icon from '../../images/icons8-delete-20.png';
 
 function Topics(){
 
@@ -16,7 +18,7 @@ function Topics(){
 
     
     useEffect( () => {
-        const topicsPromise = CustomRequest.doGet(baseURL + "/api/topic/all");
+        const topicsPromise = CustomRequest.doGet(baseURLTwo + "/api/topic");
         topicsPromise.then( (data) => setTopics(data));
     },[])
 
@@ -30,7 +32,7 @@ function Topics(){
         let body = {
             name: newTopic
         }
-        const topicPromise = CustomRequest.doPostWithBody(baseURL + "/api/topic/create", body);
+        const topicPromise = CustomRequest.doPostWithBody(baseURLTwo + "/api/topic", body);
         topicPromise.then( (data) => setTopics([...topics, data]));
         setInputModal(!inputModal);
     }
@@ -41,7 +43,7 @@ function Topics(){
         let body = {
             name: newTopic
         }
-        const topicPromise = CustomRequest.doPutWithBody(baseURL + "/api/topic/" + topic.id, body);
+        const topicPromise = CustomRequest.doPutWithBody(baseURLTwo + "/api/topic/" + topic.Id, body);
         topicPromise.then(() => location.reload());
         setEditMode(false);
         setInputModal(!inputModal);
@@ -60,6 +62,19 @@ function Topics(){
         let topic = topics.at(id);
         setNewTopic(topic.name);
         setInputModal(!inputModal);
+    }
+
+    function deleteTopic(rowId){
+        fetch(baseURLTwo + "/api/topic/" + topics[rowId].Id, {
+            method:"DELETE",
+            credentials: "include"
+        })
+        .then(() => {
+            location.reload()
+        })
+        .catch((error) => {
+            console.error(error)
+        })
     }
 
     const sorting = (col) => {
@@ -136,9 +151,14 @@ function Topics(){
                             topics.map( (topic, rowId) =>
                             <tr key={rowId}>
                                 <td>
-                                    <img id={rowId} onClick={openEdit} src={edit_icon} alt="edit" className="user-details-edit-icon"/>
+                                    <div className="topics-page_table-icon-wrapper">
+                                        <div className="delete-icon-wrapper" onClick={() => deleteTopic(rowId)}>
+                                            <img id={rowId} src={delete_icon} alt='delete' className="topic-delete-icon"/>
+                                        </div>
+                                        <img id={rowId} onClick={openEdit} src={edit_icon} alt="edit" className="user-details-edit-icon"/>                               
+                                    </div>
                                 </td>
-                                <td className="assign-task-table-column">{topic.name}</td>
+                                <td className="assign-task-table-column">{topic.Name}</td>
                             </tr>
                             )
                         }
